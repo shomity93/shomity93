@@ -1,0 +1,18 @@
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { createAdminInvite, listPendingInvites, updateInviteStatus } from "@/lib/supabase";
+import { Check, UserPlus } from "lucide-react";
+
+type Invite = { id: string; email: string; member_id: string; full_name: string; phone: string; status: string };
+
+export default function AdminApprovalPanel() {
+  const [form, setForm] = useState({ fullName: "", email: "", phone: "", memberId: "" }); const [invites, setInvites] = useState<Invite[]>([]); const [notice, setNotice] = useState(""); const [busy, setBusy] = useState(false);
+  const update = (key: keyof typeof form, value: string) => setForm((current) => ({ ...current, [key]: value }));
+  const refresh = () => { void listPendingInvites().then(setInvites).catch(() => undefined); };
+  useEffect(refresh, []);
+  const submit = async (event: React.FormEvent) => { event.preventDefault(); setBusy(true); setNotice(""); try { await createAdminInvite(form); setNotice("সদস্য অনুমোদন তালিকায় যোগ হয়েছে"); setForm({ fullName: "", email: "", phone: "", memberId: "" }); refresh(); } catch (error) { setNotice(error instanceof Error ? error.message : "অনুমোদন যোগ করা যায়নি"); } finally { setBusy(false); } };
+  const suspend = async (id: string) => { try { await updateInviteStatus(id, "suspended"); setNotice("সদস্যের অনুমোদন স্থগিত হয়েছে"); refresh(); } catch (error) { setNotice(error instanceof Error ? error.message : "অ্যাকশন সম্পন্ন করা যায়নি"); } };
+  return <div className="rounded-xl border border-amber-100 bg-amber-50/60 p-4"><div className="mb-3 flex items-center gap-2"><UserPlus className="h-4 w-4 text-amber-700" /><strong className="text-sm text-slate-800">Admin সদস্য অনুমোদন</strong></div><form className="grid gap-3" onSubmit={submit}><div><Label>পূর্ণ নাম</Label><Input required value={form.fullName} onChange={(e) => update("fullName", e.target.value)} /></div><div className="grid grid-cols-2 gap-3"><div><Label>সদস্য আইডি</Label><Input required value={form.memberId} onChange={(e) => update("memberId", e.target.value)} placeholder="S-049" /></div><div><Label>মোবাইল</Label><Input required value={form.phone} onChange={(e) => update("phone", e.target.value)} /></div></div><div><Label>অনুমোদিত ইমেইল</Label><Input required type="email" value={form.email} onChange={(e) => update("email", e.target.value)} /></div><Button type="submit" disabled={busy} className="bg-[#092337]">{busy ? "সংরক্ষণ হচ্ছে…" : "সদস্য অনুমোদন করুন"}</Button></form><div className="mt-4 grid gap-2">{invites.map((invite) => <div key={invite.id} className="flex items-center justify-between gap-3 rounded-lg bg-white p-3 text-xs"><div><strong className="block">{invite.full_name} · {invite.member_id}</strong><span className="text-slate-500">{invite.email} · {invite.status === "approved" ? "অনুমোদিত" : "স্থগিত"}</span></div>{invite.status === "approved" && <Button variant="outline" size="sm" onClick={() => suspend(invite.id)}>স্থগিত করুন</Button>}</div>)}</div>{notice && <p className={`mt-3 text-xs ${notice.includes("হয়েছে") || notice.includes("যোগ") ? "text-emerald-700" : "text-rose-700"}`}><Check className="mr-1 inline h-3 w-3" />{notice}</p>}</div>;
+}

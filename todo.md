@@ -21,3 +21,34 @@
 - [x] Localize every user-visible page, control, form, table, report, validation message, empty state, and error state into Bengali
 - [x] Configure the supplied Supabase project URL and publishable key for browser and deployment environments
 - [x] Validate the Supabase configuration without exposing credentials in logs or tests
+- [x] Admin approval required before any member can sign up or log in
+- [x] Collect and validate member personal information and profile photo during onboarding
+- [x] Automatically create a member-specific account sheet linked to dashboard totals
+- [x] Add each approved member to the member directory with name, personal details, and photo
+- [x] Add database-first SQL and RLS so data entry/removal does not require Netlify redeployment
+- [ ] Configure Brevo email verification/notification integration after API key is supplied
+- [x] Remove all accounting figures, ledgers, reports, and financial summaries from the public homepage
+- [x] Add a dedicated secured হিসাব ব্যবস্থাপনা area requiring signup/signin before entry
+- [x] Make all accounting data visible inside the secured area to authenticated approved members
+- [x] Make Member users strictly read-only inside the secured accounting area, with no add/edit/delete controls
+- [x] Keep Admin and Moderator controls separate from the Member read-only experience
+- [x] Add Bengali protected-route, sign-in, and unauthorized-access states
+- [x] Enforce approved or suspended member status on the secured accounting route
+- [x] Load real ledger and dashboard data from Supabase instead of static sample rows
+- [x] Add distinct Admin-only delete and approval controls versus Moderator edit-only controls
+- [x] Add Bengali forbidden states for unapproved, suspended, and insufficient-permission users
+- [x] Wire Admin approval management and ledger mutation actions to Supabase instead of placeholder buttons
+- [x] Add distinct Bengali states for pending approval, suspended account, and blocked action attempts
+- [x] Wire real create/edit ledger mutations for Admin and Moderator instead of placeholder নতুন এন্ট্রি controls
+- [x] Add Bengali blocked-action feedback when a Member attempts a restricted operation
+- [x] Replace prompt-based ledger create/edit with Bengali validated forms and dialogs
+- [x] Add member linkage, category, payment method, and receipt/voucher fields to ledger forms
+- [x] Add real Bengali blocked-action feedback and role-aware guards for restricted clicks
+- [x] Present ledger create/edit workflows in a Bengali modal dialog
+- [x] Add explicit role checks inside create, edit, and delete handlers before Supabase mutations
+- [x] Preload all editable ledger fields, including member linkage and receipt/voucher metadata
+- [x] Map ledger rows into complete edit-form defaults, including member ID and normalized receipt/voucher URL
+- [x] Show the existing attached receipt or voucher inside the edit dialog
+- [x] Display the existing receipt or voucher as a visible link with file metadata in the edit dialog
+- [x] Show existing attachment filename, type, and size in the Bengali edit dialog
+- [x] Pass normalized attachment metadata from ledger rows into edit-form defaults
