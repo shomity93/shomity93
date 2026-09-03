@@ -8,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
-import { compressUpload } from "@/lib/imageCompression";
+import { uploadCooperativeFile } from "@/lib/cooperativeData";
+import { subscribeToLedgerChanges } from "@/lib/supabase";
 import { jsPDF } from "jspdf";
 import { ArrowLeft, ArrowRight, BarChart3, Check, CircleDollarSign, FileDown, FileText, Gem, Globe2, ImagePlus, Landmark, LogIn, Mail, Menu, Pencil, Plus, Printer, ShieldCheck, Sparkles, Users, WalletCards, X } from "lucide-react";
 
@@ -65,17 +66,19 @@ export default function Home() {
   const [contactEmail, setContactEmail] = useState("shomity39@gmial.com");
   const [saved, setSaved] = useState(false);
   const [gallery, setGallery] = useState(heroImages);
+  const [liveTick, setLiveTick] = useState(0);
 
   useEffect(() => { const timer = window.setInterval(() => setSlide((current) => (current + 1) % gallery.length), 5000); return () => window.clearInterval(timer); }, [gallery.length]);
+  useEffect(() => { let cleanup: (() => void) | undefined; void subscribeToLedgerChanges(() => setLiveTick((tick) => tick + 1)).then((unsubscribe) => { cleanup = unsubscribe; }); return () => cleanup?.(); }, []);
   const currentHero = gallery[slide] ?? heroImages[0];
   const userLabel = user?.name ?? "অতিথি সদস্য";
   const navItems = [{ id: "home", label: "হোম" }, { id: "about", label: "আমাদের সম্পর্কে" }, { id: "dashboard", label: "ড্যাশবোর্ড" }, { id: "ledgers", label: "হিসাব খাতা" }, { id: "members", label: "সদস্যবৃন্দ" }];
   const summaryCards = useMemo(() => [{ label: "বর্তমান তহবিল", value: "৳ ৪,৮৬,২৫০", change: "+১২.৪%", icon: Landmark, tone: "gold" }, { label: "মোট জমা", value: "৳ ৬,২৪,৮০০", change: "+৮.২%", icon: WalletCards, tone: "blue" }, { label: "মোট খরচ", value: "৳ ১,৩৮,৫৫০", change: "এই বছর", icon: CircleDollarSign, tone: "rose" }, { label: "সক্রিয় সদস্য", value: "৪৮ / ৫০", change: "২টি আসন খালি", icon: Users, tone: "green" }], []);
 
   const saveCms = () => { setSaved(true); window.setTimeout(() => setSaved(false), 2200); };
-  const onGalleryUpload = async (event: React.ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; if (!file) return; const compressed = await compressUpload(file, "gallery"); const src = URL.createObjectURL(compressed); setGallery((items) => [...items, { src, eyebrow: "নতুন গ্যালারি", title: file.name.replace(/\.[^/.]+$/, ""), text: "অ্যাডমিন প্যানেল থেকে যোগ করা নতুন গ্যালারি কনটেন্ট।" }]); };
+  const onGalleryUpload = async (event: React.ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; if (!file) return; const uploaded = await uploadCooperativeFile(file, "gallery"); const src = uploaded.url; setGallery((items) => [...items, { src, eyebrow: "নতুন গ্যালারি", title: file.name.replace(/\.[^/.]+$/, ""), text: "অ্যাডমিন প্যানেল থেকে যোগ করা নতুন গ্যালারি কনটেন্ট।" }]); };
 
-  return <div className="site-shell" dir="ltr"><header className="public-nav"><div className="container nav-inner"><a className="brand" href="#home" onClick={() => setActive("home")}><span className="brand-mark"><Gem className="h-5 w-5" /></span><span><strong>{siteName}</strong><small>সমবায়ে সমৃদ্ধি</small></span></a><nav className={`desktop-links ${mobileNav ? "is-open" : ""}`}>{navItems.map((item) => <a key={item.id} className={active === item.id ? "active" : ""} href={`#${item.id}`} onClick={() => { setActive(item.id); setMobileNav(false); }}>{item.label}</a>)}</nav><div className="nav-actions"><Badge className="live-badge"><span />লাইভ আপডেট</Badge>{isAuthenticated ? <span className="user-chip">{userLabel}</span> : <Button size="sm" variant="outline" onClick={() => startLogin()}><LogIn className="mr-2 h-4 w-4" />প্রবেশ করুন</Button>}<Button variant="ghost" size="icon" className="mobile-menu" onClick={() => setMobileNav(!mobileNav)}>{mobileNav ? <X /> : <Menu />}</Button></div></div></header>
+  return <div className="site-shell" dir="ltr"><header className="public-nav"><div className="container nav-inner"><a className="brand" href="#home" onClick={() => setActive("home")}><span className="brand-mark"><Gem className="h-5 w-5" /></span><span><strong>{siteName}</strong><small>সমবায়ে সমৃদ্ধি</small></span></a><nav className={`desktop-links ${mobileNav ? "is-open" : ""}`}>{navItems.map((item) => <a key={item.id} className={active === item.id ? "active" : ""} href={`#${item.id}`} onClick={() => { setActive(item.id); setMobileNav(false); }}>{item.label}</a>)}</nav><div className="nav-actions"><Badge className="live-badge"><span />লাইভ আপডেট{liveTick > 0 ? ` · ${liveTick}` : ""}</Badge>{isAuthenticated ? <span className="user-chip">{userLabel}</span> : <Button size="sm" variant="outline" onClick={() => startLogin()}><LogIn className="mr-2 h-4 w-4" />প্রবেশ করুন</Button>}<Button variant="ghost" size="icon" className="mobile-menu" onClick={() => setMobileNav(!mobileNav)}>{mobileNav ? <X /> : <Menu />}</Button></div></div></header>
 
     <main id="home"><section className="hero"><div className="hero-image" style={{ backgroundImage: `linear-gradient(90deg, rgba(8,25,40,.82) 0%, rgba(8,25,40,.58) 42%, rgba(8,25,40,.1) 100%), url(${currentHero.src})` }} /><div className="container hero-content"><div className="hero-copy"><span className="hero-kicker"><Sparkles className="h-4 w-4" /> {currentHero.eyebrow}</span><h1>{currentHero.title}</h1><p>{currentHero.text}</p><div className="hero-ctas"><Button className="cta-primary" onClick={() => setActive("dashboard")}>ড্যাশবোর্ড দেখুন <ArrowRight className="ml-2 h-4 w-4" /></Button><Button variant="outline" className="cta-ghost" onClick={() => setActive("about")}>আরও জানুন</Button></div></div><div className="hero-side-note"><span>০{slide + 1}</span><div className="hero-progress"><i style={{ width: `${((slide + 1) / gallery.length) * 100}%` }} /></div><span>০{gallery.length}</span></div></div><div className="hero-controls"><Button variant="ghost" size="icon" onClick={() => setSlide((slide - 1 + gallery.length) % gallery.length)}><ArrowLeft /></Button><Button variant="ghost" size="icon" onClick={() => setSlide((slide + 1) % gallery.length)}><ArrowRight /></Button></div></section>
 

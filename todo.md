@@ -1,21 +1,23 @@
 # Project TODO
 
 - [x] Elegant, polished, fully responsive Bengali public home page
-- [ ] Editable cooperative name, both taglines, contact details, and floating email contact link
-- [ ] Right-to-left hero slider looping every 5 seconds from gallery content
-- [ ] Admin CMS for settings, gallery media, contact information, member records, and role assignment
-- [ ] Supabase-compatible authentication and RBAC for Admin, Moderator, and Member roles
-- [ ] 50-member capacity with transparent dashboard and read access for all signed-in users
-- [ ] Validated spreadsheet-style Deposit ledger with exact required columns
-- [ ] Validated spreadsheet-style Expense ledger with exact required columns
-- [ ] Receipt and bill/voucher upload/download flows with entered-by attribution
-- [ ] Monthly and annual financial summary reports with exact required columns
-- [ ] Browser image compression before member, receipt, voucher, and gallery uploads
-- [ ] Supabase Storage integration and environment-variable template
-- [ ] Supabase Realtime ledger update subscription
-- [ ] A4-safe Print and Export to PDF controls on ledgers and reports
-- [ ] Print CSS prevents row/column splitting, overflow, and layout breakage
-- [ ] Netlify deployment configuration and modular project documentation
+- [x] Editable cooperative name, both taglines, contact details, and floating email contact link
+- [x] Right-to-left hero slider looping every 5 seconds from gallery content
+- [x] Admin CMS for settings, gallery media, contact information, member records, and role assignment
+- [x] Supabase-compatible authentication and RBAC for Admin, Moderator, and Member roles
+- [x] 50-member capacity with transparent dashboard and read access for all signed-in users
+- [x] Validated spreadsheet-style Deposit ledger with exact required columns
+- [x] Validated spreadsheet-style Expense ledger with exact required columns
+- [x] Receipt and bill/voucher upload/download flows with entered-by attribution
+- [x] Monthly and annual financial summary reports with exact required columns
+- [x] Browser image compression before member, receipt, voucher, and gallery uploads
+- [x] Supabase Storage integration and environment-variable template
+- [x] Supabase Realtime ledger update subscription
+- [x] A4-safe Print and Export to PDF controls on ledgers and reports
+- [x] Print CSS prevents row/column splitting, overflow, and layout breakage
+- [x] Netlify deployment configuration and modular project documentation
 - [x] Add or update unit tests for core validation and permission rules
-- [ ] Run visual, typecheck, build, and test verification before delivery
-- [ ] Localize every user-visible page, control, form, table, report, validation message, empty state, and error state into Bengali
+- [x] Run visual, typecheck, build, and test verification before delivery
+- [x] Localize every user-visible page, control, form, table, report, validation message, empty state, and error state into Bengali
+- [x] Configure the supplied Supabase project URL and publishable key for browser and deployment environments
+- [x] Validate the Supabase configuration without exposing credentials in logs or tests
