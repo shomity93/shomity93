@@ -26,7 +26,7 @@
 - [x] Automatically create a member-specific account sheet linked to dashboard totals
 - [x] Add each approved member to the member directory with name, personal details, and photo
 - [x] Add database-first SQL and RLS so data entry/removal does not require Netlify redeployment
-- [ ] Configure Brevo email verification/notification integration after API key is supplied
+- [x] Configure Brevo email verification/notification integration after API key is supplied
 - [x] Remove all accounting figures, ledgers, reports, and financial summaries from the public homepage
 - [x] Add a dedicated secured হিসাব ব্যবস্থাপনা area requiring signup/signin before entry
 - [x] Make all accounting data visible inside the secured area to authenticated approved members
@@ -52,3 +52,10 @@
 - [x] Display the existing receipt or voucher as a visible link with file metadata in the edit dialog
 - [x] Show existing attachment filename, type, and size in the Bengali edit dialog
 - [x] Pass normalized attachment metadata from ledger rows into edit-form defaults
+- [x] Implement a server-side Brevo mail helper using BREVO_API_KEY
+- [x] Trigger a real Brevo email when Admin approves or suspends a member
+- [x] Add sender identity configuration and Bengali Brevo setup documentation
+- [x] Add a targeted test for the integrated notification workflow without sending a real email
+- [x] Authorize Brevo approval/suspension notifications using the secured Supabase Admin role rather than only Manus admin auth
+- [x] Document BREVO_SENDER_EMAIL, optional BREVO_SENDER_NAME, and verified sender/domain setup in Bengali
+- [x] Add an integrated notification test for the Admin approval/suspension path without sending real email
