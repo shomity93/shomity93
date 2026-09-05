@@ -26,7 +26,7 @@ export async function signUpApprovedMember(input: { email: string; password: str
   const { data, error } = await supabase.auth.signUp({ email: input.email.trim().toLowerCase(), password: input.password, options: { data: { full_name: input.fullName, phone: input.phone, member_id: input.memberId, photo_url: input.photoUrl ?? null, role: "member" } } });
   if (error) throw error;
   if (data.user) {
-    const { error: profileError } = await supabase.from("cooperative_members").upsert({ auth_user_id: data.user.id, member_id: input.memberId, full_name: input.fullName, phone: input.phone, photo_url: input.photoUrl ?? null, role: "member", status: "approved" }, { onConflict: "member_id" });
+    const { error: profileError } = await supabase.from("cooperative_members").upsert({ auth_user_id: data.user.id, member_id: input.memberId, full_name: input.fullName, email: input.email.trim().toLowerCase(), phone: input.phone, photo_url: input.photoUrl ?? null, role: "member", status: "approved" }, { onConflict: "member_id" });
     if (profileError) throw profileError;
   }
   return data;
@@ -132,20 +132,52 @@ export async function subscribeToLedgerChanges(onChange: () => void) {
   return () => { void supabase.removeChannel(channel); };
 }
 
-export type PublicGalleryItem = { id: string; src: string; title: string; eyebrow: string; text: string; sort_order: number };
+export type PublicGalleryItem = { id: string; src: string; title: string; eyebrow: string; text: string; sort_order: number; is_visible?: boolean };
+type GalleryRow = { id: string; image_url: string; title: string; sort_order: number; is_visible?: boolean | null };
+const toPublicGalleryItem = (item: GalleryRow): PublicGalleryItem => ({ id: item.id, src: item.image_url, title: item.title, eyebrow: "আমাদের গ্যালারি", text: "এডমিন সম্পাদিত গ্যালারি উপস্থাপনা।", sort_order: item.sort_order, is_visible: item.is_visible !== false });
 
 export async function listGalleryItems(): Promise<PublicGalleryItem[]> {
   if (!supabase) return [];
-  const { data, error } = await supabase.from("gallery").select("id, image_url, title, sort_order").order("sort_order", { ascending: true }).order("created_at", { ascending: true });
-  if (error) throw error;
-  return (data ?? []).map((item) => ({ id: item.id, src: item.image_url, title: item.title, eyebrow: "আমাদের গ্যালারি", text: "এডমিন সম্পাদিত গ্যালারি উপস্থাপনা।", sort_order: item.sort_order }));
+  const result = await supabase.from("gallery").select("id, image_url, title, sort_order, is_visible").eq("is_visible", true).order("sort_order", { ascending: true }).order("created_at", { ascending: true });
+  if (!result.error) return (result.data ?? []).map(toPublicGalleryItem);
+  const fallback = await supabase.from("gallery").select("id, image_url, title, sort_order").order("sort_order", { ascending: true }).order("created_at", { ascending: true });
+  if (fallback.error) throw fallback.error;
+  return (fallback.data ?? []).map((item) => toPublicGalleryItem({ ...item, is_visible: true }));
+}
+
+export async function listAllGalleryItems(): Promise<PublicGalleryItem[]> {
+  if (!supabase) return [];
+  const result = await supabase.from("gallery").select("id, image_url, title, sort_order, is_visible").order("sort_order", { ascending: true }).order("created_at", { ascending: true });
+  if (!result.error) return (result.data ?? []).map(toPublicGalleryItem);
+  const fallback = await supabase.from("gallery").select("id, image_url, title, sort_order").order("sort_order", { ascending: true }).order("created_at", { ascending: true });
+  if (fallback.error) throw fallback.error;
+  return (fallback.data ?? []).map((item) => toPublicGalleryItem({ ...item, is_visible: true }));
+}
+
+const isMissingVisibilityColumn = (error: { code?: string; message?: string } | null) => Boolean(error && (error.code === "PGRST204" || error.message?.includes("is_visible")));
+
+export async function updateGalleryItem(id: string, values: { sortOrder?: number; isVisible?: boolean }) {
+  if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
+  const payload: Record<string, unknown> = {};
+  if (typeof values.sortOrder === "number") payload.sort_order = values.sortOrder;
+  if (typeof values.isVisible === "boolean") payload.is_visible = values.isVisible;
+  const result = await supabase.from("gallery").update(payload).eq("id", id);
+  if (!result.error) return;
+  if (!isMissingVisibilityColumn(result.error)) throw result.error;
+  if (typeof values.isVisible === "boolean" && typeof values.sortOrder !== "number") throw new Error("গ্যালারি দৃশ্যমানতা পরিবর্তনের আগে Supabase-এর gallery migration চালান");
+  const fallbackPayload = { ...(typeof values.sortOrder === "number" ? { sort_order: values.sortOrder } : {}) };
+  const fallback = await supabase.from("gallery").update(fallbackPayload).eq("id", id);
+  if (fallback.error) throw fallback.error;
 }
 
 export async function createGalleryItem(input: { imageUrl: string; storagePath: string; title: string; sortOrder: number }) {
   if (!supabase) return null;
-  const { data, error } = await supabase.from("gallery").insert({ image_url: input.imageUrl, storage_path: input.storagePath, title: input.title, sort_order: input.sortOrder }).select("id, image_url, title, sort_order").single();
-  if (error) throw error;
-  return data;
+  const result = await supabase.from("gallery").insert({ image_url: input.imageUrl, storage_path: input.storagePath, title: input.title, sort_order: input.sortOrder, is_visible: true }).select("id, image_url, title, sort_order, is_visible").single();
+  if (!result.error) return result.data;
+  if (!isMissingVisibilityColumn(result.error)) throw result.error;
+  const fallback = await supabase.from("gallery").insert({ image_url: input.imageUrl, storage_path: input.storagePath, title: input.title, sort_order: input.sortOrder }).select("id, image_url, title, sort_order").single();
+  if (fallback.error) throw fallback.error;
+  return { ...fallback.data, is_visible: true };
 }
 
 export async function getSiteSettings() {

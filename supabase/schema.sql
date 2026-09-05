@@ -8,7 +8,7 @@ create table if not exists member_invites (id uuid primary key default gen_rando
 create table if not exists cooperative_members (id uuid primary key default gen_random_uuid(), auth_user_id uuid unique references auth.users(id) on delete cascade, member_id text unique not null, full_name text not null, email text unique, phone text not null, address text, photo_url text, role cooperative_role not null default 'member', status member_status not null default 'pending', created_at timestamptz not null default now(), updated_at timestamptz not null default now());
 create table if not exists member_sheets (id uuid primary key default gen_random_uuid(), member_id uuid unique references cooperative_members(id) on delete cascade not null, opening_balance numeric(12,2) not null default 0, created_at timestamptz not null default now());
 create table if not exists site_settings (id uuid primary key default gen_random_uuid(), name text not null, tagline_one text not null, tagline_two text not null, contact_email text not null, updated_at timestamptz not null default now());
-create table if not exists gallery (id uuid primary key default gen_random_uuid(), title text not null, image_url text not null, storage_path text not null, sort_order integer not null default 0, created_at timestamptz not null default now());
+create table if not exists gallery (id uuid primary key default gen_random_uuid(), title text not null, image_url text not null, storage_path text not null, sort_order integer not null default 0, is_visible boolean not null default true, created_at timestamptz not null default now());
 create table if not exists deposits (id uuid primary key default gen_random_uuid(), transaction_id text unique not null, occurred_on date not null, member_id uuid references cooperative_members(id) not null, category deposit_category not null, amount numeric(12,2) not null check (amount > 0), payment_method text not null, receipt_url text, receipt_name text, receipt_type text, receipt_size integer, entered_by uuid references auth.users(id), created_at timestamptz not null default now());
 create table if not exists expenses (id uuid primary key default gen_random_uuid(), voucher_no text unique not null, occurred_on date not null, description text not null, category expense_category not null, total_amount numeric(12,2) not null check (total_amount > 0), voucher_url text, voucher_name text, voucher_type text, voucher_size integer, entered_by uuid references auth.users(id), created_at timestamptz not null default now());
 alter table deposits add column if not exists receipt_name text;
@@ -24,12 +24,14 @@ create trigger after_member_created after insert on cooperative_members for each
 
 alter table member_invites enable row level security;
 alter table cooperative_members enable row level security;
+drop policy if exists "public can verify approved invite" on member_invites;
+create policy "public can verify approved invite" on member_invites for select to anon, authenticated using (status = 'approved');
 alter table member_sheets enable row level security;
 alter table deposits enable row level security;
 alter table expenses enable row level security;
 
-create or replace function is_coop_admin() returns boolean language sql stable as $$ select coalesce(auth.jwt() -> 'user_metadata' ->> 'role', '') = 'admin' $$;
-create or replace function is_coop_editor() returns boolean language sql stable as $$ select coalesce(auth.jwt() -> 'user_metadata' ->> 'role', '') in ('admin', 'moderator') $$;
+create or replace function public.is_coop_admin() returns boolean language sql stable security definer set search_path = public as $$ select exists (select 1 from public.cooperative_members where auth_user_id = auth.uid() and role = 'admin' and status = 'approved') $$;
+create or replace function public.is_coop_editor() returns boolean language sql stable security definer set search_path = public as $$ select exists (select 1 from public.cooperative_members where auth_user_id = auth.uid() and role in ('admin', 'moderator') and status = 'approved') $$;
 
  drop policy if exists "approved authenticated users can view members" on cooperative_members;
  drop policy if exists "approved authenticated users can view sheets" on member_sheets;
@@ -53,6 +55,7 @@ alter publication supabase_realtime add table expenses;
 alter publication supabase_realtime add table cooperative_members;
 
 -- Homepage presentation content migration for existing projects
+alter table gallery add column if not exists is_visible boolean not null default true;
 alter table site_settings add column if not exists notice_text text not null default 'সঞ্চয়, সহযোগিতা ও স্বচ্ছতার মাধ্যমে একটি নিরাপদ সম্মিলিত ভবিষ্যৎ গড়ার অঙ্গীকার।';
 alter table site_settings enable row level security;
 alter table gallery enable row level security;

@@ -67,7 +67,7 @@
 - [x] Change the public tagline to “আঁরা বিয়াক্কুন এক পরিবার, লক্ষ্য অর্জনে প্রতিজ্ঞাবদ্ধ” everywhere
 - [x] Replace template-like public presentation content and inactive controls with functional Bengali sections
 - [x] Connect the hero slider to unlimited Supabase gallery records with 5-second right-to-left autoplay
-- [ ] Add Admin-editable homepage presentation content, notices, gallery ordering, and visibility
+- [x] Add Admin-editable homepage presentation content, notices, gallery ordering, and visibility
 - [x] Replace hardcoded demo member cards with live approved member profiles and photos
 - [ ] Run complete click-path, mobile, test, typecheck, build, and live deploy verification
 - [x] Add Admin website logo/profile image upload, preview, replacement, and persistent save controls
@@ -87,3 +87,15 @@
 - [x] Translate remaining user-facing Brevo email content and Netlify function/API error messages into fully Bengali wording
 - [ ] Trigger/publish the latest Netlify deploy and re-check production auth and mixed-language strings
 - [x] Translate the remaining mixed-language Supabase server-configuration error and audit all notification/API strings
+- [x] Add a safe fallback when the optional gallery visibility column has not yet been migrated
+- [ ] Verify the gallery visibility migration and persistence in the actual Supabase project
+- [x] Clarify homepage CMS scope as editable notice, logo, gallery uploads, ordering, and visibility
+- [x] Fix global RTL alignment so Bengali body text and controls remain visually balanced rather than forced to the right edge
+- [x] Make the public member login/signup form visibly open, opaque, scrollable, and clearly labeled for Admin and Member access
+- [ ] Add a clear Bengali Admin setup path and verify the Admin role mapping against Supabase auth metadata/RLS
+- [ ] Re-verify the live homepage and /hisab route after the latest deployment
+- [x] Add write-safe handling for gallery create/update when the visibility migration is absent
+- [x] Add explicit Bengali CMS helper text documenting the editable homepage scope
+- [ ] Verify gallery ordering and visibility persistence end-to-end against the real Supabase project
+- [ ] Show a visible Bengali migration warning when gallery visibility cannot be changed on an unmigrated project
+- [ ] Verify gallery create, reorder, and visibility-toggle behavior on an unmigrated project without silent failure
