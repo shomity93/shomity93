@@ -41,7 +41,7 @@ export async function sendMemberStatusEmail(input: { email: string; fullName: st
 export async function sendMemberStatusEmailForSupabaseAdmin(input: { email: string; fullName: string; status: MemberStatus; accessToken: string }) {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseAnonKey) throw new Error("সুপাবেস server configuration পাওয়া যায়নি");
+  if (!supabaseUrl || !supabaseAnonKey) throw new Error("সুপাবেস সার্ভার কনফিগারেশন পাওয়া যায়নি");
 
   const client = createClient(supabaseUrl, supabaseAnonKey, { global: { headers: { Authorization: `Bearer ${input.accessToken}` } } });
   const { data: authData, error: authError } = await client.auth.getUser(input.accessToken);

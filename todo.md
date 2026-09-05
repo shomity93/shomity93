@@ -84,5 +84,6 @@
 - [x] Use the saved logo in an additional homepage presentation surface
 - [ ] Trigger/publish the latest Netlify deploy and re-verify the live mobile auth, CMS, slider, and CTA paths
 - [ ] Resolve all remaining auth visibility, responsive, localization, CMS, compression, repository, and production-verification issues in one final pass
-- [ ] Translate remaining user-facing Brevo email content and Netlify function/API error messages into fully Bengali wording
+- [x] Translate remaining user-facing Brevo email content and Netlify function/API error messages into fully Bengali wording
 - [ ] Trigger/publish the latest Netlify deploy and re-check production auth and mixed-language strings
+- [x] Translate the remaining mixed-language Supabase server-configuration error and audit all notification/API strings
