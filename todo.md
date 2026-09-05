@@ -137,3 +137,12 @@
 - [ ] Re-test the protected /hisab login flow after the Admin linkage fix and confirm the latest client bundle is deployed
 - [x] Directly verify the Supabase Auth user for shomity93@gmail.com and document its linkage to cooperative_members.auth_user_id
 - [x] Re-check approved invite/profile lookup end-to-end against production after the invite repair
+- [ ] Repair production Admin gallery image upload failure
+- [ ] Repair production Admin site-settings save failure
+- [ ] Verify gallery upload and site-settings persistence with the authenticated Admin path
+- [x] Repair production member accounting transaction save failure
+- [x] Verify member_transactions schema, enum values, foreign key, and Admin/Moderator insert policy in production
+- [ ] Verify one real member transaction persists and updates the dashboard without fabricated data
+- [ ] Deploy the member transaction save-path fix and re-test one real Admin/Moderator member-transaction save in production, confirming dashboard refresh
+- [x] Directly verify the production foreign key from member_transactions.member_id to cooperative_members.id
+- [ ] Verify the live UI shows the detailed Bengali Supabase error or success state after deployment

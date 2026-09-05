@@ -1,0 +1,4 @@
+# Live verification
+
+On 2026-09-05, https://shomity93.netlify.app served the Bengali homepage with the exact combined tagline, visible `সদস্য / এডমিন প্রবেশ` button, protected হিসাব ব্যবস্থাপনা link, and no public financial figures. The auth modal opened successfully and showed Bengali `লগইন` and `সাইনআপ` controls, email and password inputs, an opaque scrollable modal surface, and the text explaining that Admin access comes from the Supabase `admin` role and `approved` status. Live Admin password login was not attempted because credentials were not provided.
+The live signup tab showed full name, member ID, mobile number, compressed profile photo upload, email, and password fields. The live `/hisab` route showed the Bengali unauthenticated protected state with a visible `সদস্য / এডমিন প্রবেশ` button and `হোমে ফিরুন` action. Admin password entry was intentionally not attempted without the password.

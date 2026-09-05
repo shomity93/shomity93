@@ -131,3 +131,27 @@ DO $$ BEGIN
     alter publication supabase_realtime add table public.member_transactions;
   END IF;
 END $$;
+
+-- CMS table policies required for public reads and approved Admin writes
+alter table public.site_settings enable row level security;
+alter table public.gallery enable row level security;
+
+drop policy if exists "public can view site settings" on public.site_settings;
+create policy "public can view site settings"
+  on public.site_settings for select to anon, authenticated
+  using (true);
+
+drop policy if exists "public can view gallery" on public.gallery;
+create policy "public can view gallery"
+  on public.gallery for select to anon, authenticated
+  using (true);
+
+drop policy if exists "admin manages site settings" on public.site_settings;
+create policy "admin manages site settings"
+  on public.site_settings for all to authenticated
+  using (public.is_coop_admin()) with check (public.is_coop_admin());
+
+drop policy if exists "admin manages gallery" on public.gallery;
+create policy "admin manages gallery"
+  on public.gallery for all to authenticated
+  using (public.is_coop_admin()) with check (public.is_coop_admin());

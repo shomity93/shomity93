@@ -240,23 +240,42 @@ export async function listMemberTransactions() {
   return (data ?? []) as MemberTransaction[];
 }
 
+const memberTransactionFields = ["member_id", "transaction_date", "transaction_type", "description", "amount", "payment_method", "attachment_url", "attachment_name", "attachment_type", "attachment_size", "entered_by"] as const;
+
+function normalizeMemberTransaction(values: Record<string, unknown>) {
+  const payload: Record<string, unknown> = {};
+  for (const field of memberTransactionFields) {
+    if (values[field] !== undefined) payload[field] = values[field];
+  }
+  if (payload.description !== undefined) payload.description = String(payload.description).trim();
+  if (payload.amount !== undefined) payload.amount = Number(payload.amount);
+  if (payload.attachment_size === "" || payload.attachment_size === null) payload.attachment_size = null;
+  else if (payload.attachment_size !== undefined) payload.attachment_size = Number(payload.attachment_size);
+  return payload;
+}
+
+function memberTransactionError(error: { message?: string; code?: string; details?: string; hint?: string }) {
+  const suffix = [error.code, error.details, error.hint].filter(Boolean).join(" · ");
+  return new Error(`সদস্যের হিসাব সংরক্ষণ করা যায়নি${suffix ? ` (${suffix})` : ""}: ${error.message ?? "Supabase mutation failed"}`);
+}
+
 export async function createMemberTransaction(values: Record<string, unknown>) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
-  const { data, error } = await supabase.from("member_transactions").insert(values).select().single();
-  if (error) throw error;
+  const { data, error } = await supabase.from("member_transactions").insert(normalizeMemberTransaction(values)).select().single();
+  if (error) throw memberTransactionError(error);
   return data;
 }
 
 export async function updateMemberTransaction(id: string, values: Record<string, unknown>) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
-  const { error } = await supabase.from("member_transactions").update(values).eq("id", id);
-  if (error) throw error;
+  const { error } = await supabase.from("member_transactions").update(normalizeMemberTransaction(values)).eq("id", id);
+  if (error) throw memberTransactionError(error);
 }
 
 export async function deleteMemberTransaction(id: string) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
   const { error } = await supabase.from("member_transactions").delete().eq("id", id);
-  if (error) throw error;
+  if (error) throw memberTransactionError(error);
 }
 
 export type PresentationPost = { id: string; title: string; body_text: string; image_url?: string | null; storage_path?: string | null; sort_order: number; is_visible: boolean; created_at?: string };
