@@ -1,7 +1,7 @@
 import { supabase } from "./supabase";
 import { compressUpload } from "./imageCompression";
 
-export type UploadFolder = "gallery" | "members" | "receipts" | "vouchers";
+export type UploadFolder = "gallery" | "members" | "receipts" | "vouchers" | "branding";
 
 export async function uploadCooperativeFile(file: File, folder: UploadFolder) {
   const compressed = file.type.startsWith("image/") ? await compressUpload(file, folder) : file;

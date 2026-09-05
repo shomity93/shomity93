@@ -51,3 +51,22 @@ create policy "admins delete expenses" on expenses for delete to authenticated u
 alter publication supabase_realtime add table deposits;
 alter publication supabase_realtime add table expenses;
 alter publication supabase_realtime add table cooperative_members;
+
+-- Homepage presentation content migration for existing projects
+alter table site_settings add column if not exists notice_text text not null default 'সঞ্চয়, সহযোগিতা ও স্বচ্ছতার মাধ্যমে একটি নিরাপদ সম্মিলিত ভবিষ্যৎ গড়ার অঙ্গীকার।';
+alter table site_settings enable row level security;
+alter table gallery enable row level security;
+drop policy if exists "public can view site settings" on site_settings;
+drop policy if exists "public can view gallery" on gallery;
+drop policy if exists "admin manages site settings" on site_settings;
+drop policy if exists "admin manages gallery" on gallery;
+create policy "public can view site settings" on site_settings for select to anon, authenticated using (true);
+create policy "public can view gallery" on gallery for select to anon, authenticated using (true);
+create policy "admin manages site settings" on site_settings for all to authenticated using (is_coop_admin()) with check (is_coop_admin());
+create policy "admin manages gallery" on gallery for all to authenticated using (is_coop_admin()) with check (is_coop_admin());
+
+-- Manual Admin-managed website logo and member profile photo migration
+alter table site_settings add column if not exists logo_url text;
+alter table site_settings add column if not exists logo_path text;
+drop policy if exists "admin updates member photos" on cooperative_members;
+create policy "admin updates member photos" on cooperative_members for update to authenticated using (is_coop_admin()) with check (is_coop_admin());

@@ -21,7 +21,7 @@ export async function findApprovedMember(email: string) {
 export async function signUpApprovedMember(input: { email: string; password: string; fullName: string; phone: string; memberId: string; photoUrl?: string }) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
   const approved = await findApprovedMember(input.email);
-  if (!approved) throw new Error("এই ইমেইলটি Admin এখনও অনুমোদন করেননি");
+  if (!approved) throw new Error("এই ইমেইলটি এডমিন এখনও অনুমোদন করেননি");
   if (approved.member_id !== input.memberId) throw new Error("সদস্য আইডি মিলছে না");
   const { data, error } = await supabase.auth.signUp({ email: input.email.trim().toLowerCase(), password: input.password, options: { data: { full_name: input.fullName, phone: input.phone, member_id: input.memberId, photo_url: input.photoUrl ?? null, role: "member" } } });
   if (error) throw error;
@@ -35,7 +35,7 @@ export async function signUpApprovedMember(input: { email: string; password: str
 export async function signInMember(email: string, password: string) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
   const approved = await findApprovedMember(email);
-  if (!approved) throw new Error("আপনার সদস্যপদ এখনও Admin অনুমোদন করেননি");
+  if (!approved) throw new Error("আপনার সদস্যপদ এখনও এডমিন অনুমোদন করেননি");
   const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
   if (error) throw error;
   return data;
@@ -130,4 +130,50 @@ export async function subscribeToLedgerChanges(onChange: () => void) {
   if (!supabase) return () => undefined;
   const channel = supabase.channel("সমিতি-হিসাব-খাতা").on("postgres_changes", { event: "*", schema: "public", table: "deposits" }, onChange).on("postgres_changes", { event: "*", schema: "public", table: "expenses" }, onChange).on("postgres_changes", { event: "*", schema: "public", table: "cooperative_members" }, onChange).subscribe();
   return () => { void supabase.removeChannel(channel); };
+}
+
+export type PublicGalleryItem = { id: string; src: string; title: string; eyebrow: string; text: string; sort_order: number };
+
+export async function listGalleryItems(): Promise<PublicGalleryItem[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.from("gallery").select("id, image_url, title, sort_order").order("sort_order", { ascending: true }).order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((item) => ({ id: item.id, src: item.image_url, title: item.title, eyebrow: "আমাদের গ্যালারি", text: "এডমিন সম্পাদিত গ্যালারি উপস্থাপনা।", sort_order: item.sort_order }));
+}
+
+export async function createGalleryItem(input: { imageUrl: string; storagePath: string; title: string; sortOrder: number }) {
+  if (!supabase) return null;
+  const { data, error } = await supabase.from("gallery").insert({ image_url: input.imageUrl, storage_path: input.storagePath, title: input.title, sort_order: input.sortOrder }).select("id, image_url, title, sort_order").single();
+  if (error) throw error;
+  return data;
+}
+
+export async function getSiteSettings() {
+  if (!supabase) return null;
+  const { data, error } = await supabase.from("site_settings").select("id, name, tagline_one, tagline_two, contact_email, notice_text, logo_url, logo_path").order("updated_at", { ascending: false }).limit(1).maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function saveSiteSettings(input: { name: string; taglineOne: string; taglineTwo: string; contactEmail: string; noticeText: string; logoUrl?: string; logoPath?: string }) {
+  if (!supabase) return null;
+  const { data: current } = await supabase.from("site_settings").select("id").order("updated_at", { ascending: false }).limit(1).maybeSingle();
+  const payload = { name: input.name.trim(), tagline_one: input.taglineOne.trim(), tagline_two: input.taglineTwo.trim(), contact_email: input.contactEmail.trim(), notice_text: input.noticeText.trim(), logo_url: input.logoUrl ?? null, logo_path: input.logoPath ?? null, updated_at: new Date().toISOString() };
+  const query = current?.id ? supabase.from("site_settings").update(payload).eq("id", current.id) : supabase.from("site_settings").insert(payload);
+  const { data, error } = await query.select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function subscribeToPublicContentChanges(onChange: () => void) {
+  if (!supabase) return () => undefined;
+  const channel = supabase.channel("সমিতি-পাবলিক-কনটেন্ট").on("postgres_changes", { event: "*", schema: "public", table: "gallery" }, onChange).on("postgres_changes", { event: "*", schema: "public", table: "site_settings" }, onChange).subscribe();
+  return () => { void supabase.removeChannel(channel); };
+}
+
+export async function updateMemberPhoto(memberRowId: string, photoUrl: string) {
+  if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
+  const { data, error } = await supabase.from("cooperative_members").update({ photo_url: photoUrl, updated_at: new Date().toISOString() }).eq("id", memberRowId).select("id, member_id, full_name, phone, photo_url, role, status").single();
+  if (error) throw error;
+  return data;
 }

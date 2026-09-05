@@ -63,3 +63,24 @@
 - [x] Add a visible Bengali Admin login path in production
 - [x] Fix protected accounting route and API compatibility for the deployed environment
 - [x] Verify every homepage CTA, auth control, and protected-area navigation action
+- [x] Rebuild mobile auth modal with opaque Bengali surface, clear Admin entry, scrolling, and focus states
+- [x] Change the public tagline to “আঁরা বিয়াক্কুন এক পরিবার, লক্ষ্য অর্জনে প্রতিজ্ঞাবদ্ধ” everywhere
+- [x] Replace template-like public presentation content and inactive controls with functional Bengali sections
+- [x] Connect the hero slider to unlimited Supabase gallery records with 5-second right-to-left autoplay
+- [ ] Add Admin-editable homepage presentation content, notices, gallery ordering, and visibility
+- [x] Replace hardcoded demo member cards with live approved member profiles and photos
+- [ ] Run complete click-path, mobile, test, typecheck, build, and live deploy verification
+- [x] Add Admin website logo/profile image upload, preview, replacement, and persistent save controls
+- [x] Add Admin member profile-photo edit and replacement controls with compressed Supabase Storage upload
+- [x] Connect the saved website identity image to public header, footer, and homepage presentation
+- [x] Complete the combined mobile auth, clickable presentation, gallery slider, CMS, and Netlify production fixes
+- [x] Render the exact combined Bengali tagline beneath the website name
+- [x] Add a visible right-to-left hero slide transition while retaining 5-second looping
+- [x] Make “আরও জানুন” scroll to the About presentation section
+- [x] Localize remaining visible admin labels and public explanatory text into Bengali
+- [ ] Compress Admin member photo replacements before Storage upload
+- [ ] Replace remaining user-visible English or mixed auth/admin strings with fully Bengali copy
+- [ ] Add explicit focus-visible styling for mobile auth dialog controls
+- [ ] Use the saved logo in an additional homepage presentation surface
+- [ ] Trigger/publish the latest Netlify deploy and re-verify the live mobile auth, CMS, slider, and CTA paths
+- [ ] Resolve all remaining auth visibility, responsive, localization, CMS, compression, repository, and production-verification issues in one final pass
