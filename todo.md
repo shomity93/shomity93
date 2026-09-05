@@ -59,3 +59,7 @@
 - [x] Authorize Brevo approval/suspension notifications using the secured Supabase Admin role rather than only Manus admin auth
 - [x] Document BREVO_SENDER_EMAIL, optional BREVO_SENDER_NAME, and verified sender/domain setup in Bengali
 - [x] Add an integrated notification test for the Admin approval/suspension path without sending real email
+- [x] Diagnose Netlify production signup/signin form visibility and click failures
+- [x] Add a visible Bengali Admin login path in production
+- [x] Fix protected accounting route and API compatibility for the deployed environment
+- [x] Verify every homepage CTA, auth control, and protected-area navigation action

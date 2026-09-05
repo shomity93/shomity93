@@ -8,9 +8,14 @@ export const isSupabaseConfigured = Boolean(supabase);
 
 export async function findApprovedMember(email: string) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
-  const { data, error } = await supabase.from("member_invites").select("id, email, member_id, full_name, status").eq("email", email.trim().toLowerCase()).eq("status", "approved").maybeSingle();
-  if (error) throw error;
-  return data;
+  const normalizedEmail = email.trim().toLowerCase();
+  const { data: invite, error: inviteError } = await supabase.from("member_invites").select("id, email, member_id, full_name, status").eq("email", normalizedEmail).eq("status", "approved").maybeSingle();
+  if (inviteError) throw inviteError;
+  if (invite) return invite;
+
+  const { data: profile, error: profileError } = await supabase.from("cooperative_members").select("id, email, member_id, full_name, status, role").eq("email", normalizedEmail).eq("status", "approved").maybeSingle();
+  if (profileError) throw profileError;
+  return profile;
 }
 
 export async function signUpApprovedMember(input: { email: string; password: string; fullName: string; phone: string; memberId: string; photoUrl?: string }) {
