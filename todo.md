@@ -97,5 +97,5 @@
 - [x] Add write-safe handling for gallery create/update when the visibility migration is absent
 - [x] Add explicit Bengali CMS helper text documenting the editable homepage scope
 - [ ] Verify gallery ordering and visibility persistence end-to-end against the real Supabase project
-- [ ] Show a visible Bengali migration warning when gallery visibility cannot be changed on an unmigrated project
+- [x] Show a visible Bengali migration warning when gallery visibility cannot be changed on an unmigrated project
 - [ ] Verify gallery create, reorder, and visibility-toggle behavior on an unmigrated project without silent failure
