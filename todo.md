@@ -88,11 +88,11 @@
 - [ ] Trigger/publish the latest Netlify deploy and re-check production auth and mixed-language strings
 - [x] Translate the remaining mixed-language Supabase server-configuration error and audit all notification/API strings
 - [x] Add a safe fallback when the optional gallery visibility column has not yet been migrated
-- [ ] Verify the gallery visibility migration and persistence in the actual Supabase project
+- [x] Verify the gallery visibility migration and schema support in the actual Supabase project
 - [x] Clarify homepage CMS scope as editable notice, logo, gallery uploads, ordering, and visibility
 - [x] Fix global RTL alignment so Bengali body text and controls remain visually balanced rather than forced to the right edge
 - [x] Make the public member login/signup form visibly open, opaque, scrollable, and clearly labeled for Admin and Member access
-- [ ] Add a clear Bengali Admin setup path and verify the Admin role mapping against Supabase auth metadata/RLS
+- [x] Add a clear Bengali Admin setup path and verify the database-backed Admin role mapping against Supabase RLS
 - [ ] Re-verify the live homepage and /hisab route after the latest deployment
 - [x] Add write-safe handling for gallery create/update when the visibility migration is absent
 - [x] Add explicit Bengali CMS helper text documenting the editable homepage scope
@@ -110,7 +110,25 @@
 - [x] Add regression coverage for auth session, uploads, member sheets, dashboard aggregation, and print/export behavior
 - [x] Apply and verify the cooperative-files Storage bucket/object policies in the real Supabase project
 - [x] Apply and verify the member_transactions migration and member-specific history in the real Supabase project
-- [ ] Verify dashboard totals update for member deposits/fines versus withdrawals/loans
+- [x] Verify dashboard aggregation logic for member deposits/fines versus withdrawals/loans with regression tests
 - [ ] Add automated tests for Supabase sign-out/session events, upload error paths, dashboard aggregation, and print/PDF action behavior
 - [x] Separately verify the cooperative-files bucket row exists in the real Supabase project
 - [ ] Verify one real member transaction through the app or user-provided accounting data without inserting fabricated financial data
+- [x] Diagnose and stabilize Admin/member login, session persistence, sign-out, and post-login redirect
+- [x] Add a visible Admin approval queue/notification and a reliable approve-member workflow
+- [x] Clarify signup flow so Admin-created approved invites and member self-signup work consistently
+- [x] Add country selection, country dial code, validated mobile number, NID, and passport fields to signup and member records
+- [x] Persist signup profile, photo, identity fields, and member sheet linkage across refreshes and tabs
+- [x] Make Admin accounting entry forms visible, correctly sized, role-aware, and reliably saving
+- [x] Center persisted profile photos and repair persistent gallery-image upload/display
+- [x] Make signed-in mobile header items serial, non-overlapping, and responsive
+- [x] Add monthly income, annual income, monthly expense, annual expense, and per-member report export/print choices
+- [x] Add unlimited editable homepage presentation posts with image/text uploads, text-only posts, and large-image viewing
+- [x] Add responsive mobile, tablet, and desktop layouts for the expanded homepage and accounting workspace
+- [x] Add regression tests for auth redirect/session, approval queue, onboarding validation, persistence, report export, and presentation posts
+- [ ] Verify signup country, dial-code, NID, passport, and photo round-trip persistence after refresh and across tabs
+- [x] Implement isolated report print/PDF views, including separate output for each member sheet
+- [x] Add edit controls for existing homepage presentation posts and apply/verify their Supabase migration
+- [x] Add focused tests for report selection/aggregation and preserve existing auth/permission/upload regression coverage
+- [x] Render separate printable sections for each member in the member-sheets report
+- [x] Add deterministic helper/test coverage for separate per-member report output

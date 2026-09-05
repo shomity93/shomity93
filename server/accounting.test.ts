@@ -24,3 +24,35 @@ describe("member-wise dashboard aggregation", () => {
     expect(validateCooperativeUpload({ name: "large.jpg", type: "image/jpeg", size: 11 * 1024 * 1024 })).toBe(false);
   });
 });
+
+import { aggregatePeriodAmounts, reportPeriod } from "../shared/reporting";
+
+describe("report selection helpers", () => {
+  it("groups income and expense rows by month or year", () => {
+    const rows = [
+      { period: reportPeriod("2026-01-03", false), description: "জমা", amount: "100" },
+      { period: reportPeriod("2026-01-24", false), description: "জমা", amount: 50 },
+      { period: reportPeriod("2026-02-01", false), description: "জমা", amount: 25 },
+    ];
+    expect(aggregatePeriodAmounts(rows)).toEqual([
+      { period: "2026-01", description: "সমষ্টি", amount: 150 },
+      { period: "2026-02", description: "সমষ্টি", amount: 25 },
+    ]);
+    expect(reportPeriod("2026-01-03", true)).toBe("2026");
+  });
+});
+
+import { groupMemberReportRows } from "../shared/reporting";
+
+describe("separate member-sheet report output", () => {
+  it("groups rows into independent member sheets", () => {
+    const grouped = groupMemberReportRows([
+      { memberName: "আহম্মেদ · M-001", period: "2026-01-01", description: "মাসিক জমা", amount: 100 },
+      { memberName: "সালমা · M-002", period: "2026-01-02", description: "ফাইন", amount: 20 },
+      { memberName: "আহম্মেদ · M-001", period: "2026-01-03", description: "ধার", amount: 50 },
+    ]);
+    expect(Object.keys(grouped)).toEqual(["আহম্মেদ · M-001", "সালমা · M-002"]);
+    expect(grouped["আহম্মেদ · M-001"]).toHaveLength(2);
+    expect(grouped["সালমা · M-002"]).toHaveLength(1);
+  });
+});

@@ -10,25 +10,36 @@ export const isSupabaseConfigured = Boolean(supabase);
 export async function findApprovedMember(email: string) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
   const normalizedEmail = email.trim().toLowerCase();
-  const { data: invite, error: inviteError } = await supabase.from("member_invites").select("id, email, member_id, full_name, status").eq("email", normalizedEmail).eq("status", "approved").maybeSingle();
+  const { data: invite, error: inviteError } = await supabase.from("member_invites").select("id, email, member_id, full_name, phone, country, country_code, national_id, passport_number, status").eq("email", normalizedEmail).eq("status", "approved").maybeSingle();
   if (inviteError) throw inviteError;
   if (invite) return invite;
-
-  const { data: profile, error: profileError } = await supabase.from("cooperative_members").select("id, email, member_id, full_name, status, role").eq("email", normalizedEmail).eq("status", "approved").maybeSingle();
+  const { data: profile, error: profileError } = await supabase.from("cooperative_members").select("id, email, member_id, full_name, phone, country, country_code, national_id, passport_number, status, role").eq("email", normalizedEmail).eq("status", "approved").maybeSingle();
   if (profileError) throw profileError;
   return profile;
 }
 
-export async function signUpApprovedMember(input: { email: string; password: string; fullName: string; phone: string; memberId: string; photoUrl?: string }) {
+export async function requestMemberApproval(input: { email: string; fullName: string; phone: string; memberId: string; country?: string; countryCode?: string; nationalId?: string; passportNumber?: string }) {
+  if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
+  const payload = { email: input.email.trim().toLowerCase(), member_id: input.memberId.trim(), full_name: input.fullName.trim(), phone: input.phone.trim(), country: input.country?.trim() || null, country_code: input.countryCode?.trim() || null, national_id: input.nationalId?.trim() || null, passport_number: input.passportNumber?.trim() || null, status: "pending" as const };
+  const { data, error } = await supabase.from("member_invites").upsert(payload, { onConflict: "email" }).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function signUpApprovedMember(input: { email: string; password: string; fullName: string; phone: string; memberId: string; country?: string; countryCode?: string; nationalId?: string; passportNumber?: string; photoFile?: File }) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
   const approved = await findApprovedMember(input.email);
-  if (!approved) throw new Error("এই ইমেইলটি এডমিন এখনও অনুমোদন করেননি");
+  if (!approved) { await requestMemberApproval(input); throw new Error("সাইনআপের অনুরোধ পাঠানো হয়েছে। এডমিন অনুমোদনের পর আবার সাইনআপ করুন"); }
   if (approved.member_id !== input.memberId) throw new Error("সদস্য আইডি মিলছে না");
-  const { data, error } = await supabase.auth.signUp({ email: input.email.trim().toLowerCase(), password: input.password, options: { data: { full_name: input.fullName, phone: input.phone, member_id: input.memberId, photo_url: input.photoUrl ?? null, role: "member" } } });
+  let photoUrl: string | null = null;
+  if (input.photoFile) photoUrl = await uploadMemberPhoto(input.photoFile, input.memberId);
+  const { data, error } = await supabase.auth.signUp({ email: input.email.trim().toLowerCase(), password: input.password, options: { data: { full_name: input.fullName, phone: input.phone, member_id: input.memberId, country: input.country ?? null, country_code: input.countryCode ?? null, national_id: input.nationalId ?? null, passport_number: input.passportNumber ?? null, photo_url: photoUrl, role: "member" } } });
   if (error) throw error;
   if (data.user) {
-    const { error: profileError } = await supabase.from("cooperative_members").upsert({ auth_user_id: data.user.id, member_id: input.memberId, full_name: input.fullName, email: input.email.trim().toLowerCase(), phone: input.phone, photo_url: input.photoUrl ?? null, role: "member", status: "approved" }, { onConflict: "member_id" });
+    const { data: profile, error: profileError } = await supabase.from("cooperative_members").upsert({ auth_user_id: data.user.id, member_id: input.memberId, full_name: input.fullName, email: input.email.trim().toLowerCase(), phone: input.phone, country: input.country ?? null, country_code: input.countryCode ?? null, national_id: input.nationalId ?? null, passport_number: input.passportNumber ?? null, photo_url: photoUrl, role: "member", status: "approved" }, { onConflict: "member_id" }).select("id").single();
     if (profileError) throw profileError;
+    const { error: sheetError } = await supabase.from("member_sheets").upsert({ member_id: profile.id }, { onConflict: "member_id" });
+    if (sheetError && sheetError.code !== "42P01") throw sheetError;
   }
   if (data.session) window.dispatchEvent(new Event("supabase-session-changed"));
   return data;
@@ -37,7 +48,7 @@ export async function signUpApprovedMember(input: { email: string; password: str
 export async function signInMember(email: string, password: string) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
   const approved = await findApprovedMember(email);
-  if (!approved) throw new Error("আপনার সদস্যপদ এখনও এডমিন অনুমোদন করেননি");
+  if (!approved) throw new Error("আপনার ইমেইলটি এডমিন অনুমোদিত তালিকায় নেই");
   const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
   if (error) throw error;
   window.dispatchEvent(new Event("supabase-session-changed"));
@@ -51,11 +62,17 @@ export async function signOutMember() {
   window.dispatchEvent(new Event("supabase-session-changed"));
 }
 
+export async function getCurrentAuthUserId() {
+  if (!supabase) return null;
+  const { data } = await supabase.auth.getUser();
+  return data.user?.id ?? null;
+}
+
 export async function getCurrentMember() {
   if (!supabase) return null;
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) return null;
-  const { data, error } = await supabase.from("cooperative_members").select("id, auth_user_id, member_id, full_name, phone, photo_url, role, status").eq("auth_user_id", authData.user.id).maybeSingle();
+  const { data, error } = await supabase.from("cooperative_members").select("id, auth_user_id, member_id, full_name, email, phone, country, country_code, national_id, passport_number, photo_url, role, status").eq("auth_user_id", authData.user.id).maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -76,14 +93,14 @@ export async function listExpenses() {
 
 export async function listApprovedMembers() {
   if (!supabase) return [];
-  const { data, error } = await supabase.from("cooperative_members").select("id, member_id, full_name, phone, photo_url, role, status").eq("status", "approved").order("created_at", { ascending: true });
+  const { data, error } = await supabase.from("cooperative_members").select("id, member_id, full_name, email, phone, country, country_code, national_id, passport_number, photo_url, role, status").eq("status", "approved").order("created_at", { ascending: true });
   if (error) throw error;
   return data ?? [];
 }
 
 export async function listPendingInvites() {
   if (!supabase) return [];
-  const { data, error } = await supabase.from("member_invites").select("id, email, member_id, full_name, phone, status, created_at").in("status", ["pending", "approved"]).order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("member_invites").select("id, email, member_id, full_name, phone, country, country_code, national_id, passport_number, status, created_at").in("status", ["pending", "approved"]).order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
@@ -106,9 +123,9 @@ export async function deleteLedgerEntry(table: "deposits" | "expenses", id: stri
   if (error) throw error;
 }
 
-export async function createAdminInvite(input: { email: string; memberId: string; fullName: string; phone: string }) {
+export async function createAdminInvite(input: { email: string; memberId: string; fullName: string; phone: string; country?: string; countryCode?: string; nationalId?: string; passportNumber?: string }) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
-  const { data, error } = await supabase.from("member_invites").insert({ email: input.email.trim().toLowerCase(), member_id: input.memberId.trim(), full_name: input.fullName.trim(), phone: input.phone.trim(), status: "approved" }).select().single();
+  const { data, error } = await supabase.from("member_invites").upsert({ email: input.email.trim().toLowerCase(), member_id: input.memberId.trim(), full_name: input.fullName.trim(), phone: input.phone.trim(), country: input.country?.trim() || null, country_code: input.countryCode?.trim() || null, national_id: input.nationalId?.trim() || null, passport_number: input.passportNumber?.trim() || null, status: "approved" }, { onConflict: "email" }).select().single();
   if (error) throw error;
   return data;
 }
@@ -131,7 +148,8 @@ export async function uploadMemberPhoto(file: File, memberId: string) {
 
 export async function updateInviteStatus(inviteId: string, status: "approved" | "suspended") {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
-  const { data, error } = await supabase.from("member_invites").update({ status, approved_at: status === "approved" ? new Date().toISOString() : null }).eq("id", inviteId).select().single();
+  const sessionResult = await supabase.auth.getSession();
+  const { data, error } = await supabase.from("member_invites").update({ status, approved_by: sessionResult.data.session?.user.id ?? null, approved_at: status === "approved" ? new Date().toISOString() : null }).eq("id", inviteId).select().single();
   if (error) throw error;
   return data;
 }
@@ -209,7 +227,7 @@ export async function saveSiteSettings(input: { name: string; taglineOne: string
 
 export async function subscribeToPublicContentChanges(onChange: () => void) {
   if (!supabase) return () => undefined;
-  const channel = supabase.channel("সমিতি-পাবলিক-কনটেন্ট").on("postgres_changes", { event: "*", schema: "public", table: "gallery" }, onChange).on("postgres_changes", { event: "*", schema: "public", table: "site_settings" }, onChange).subscribe();
+  const channel = supabase.channel("সমিতি-পাবলিক-কনটেন্ট").on("postgres_changes", { event: "*", schema: "public", table: "gallery" }, onChange).on("postgres_changes", { event: "*", schema: "public", table: "site_settings" }, onChange).on("postgres_changes", { event: "*", schema: "public", table: "presentation_posts" }, onChange).subscribe();
   return () => { void supabase.removeChannel(channel); };
 }
 
@@ -238,6 +256,36 @@ export async function updateMemberTransaction(id: string, values: Record<string,
 export async function deleteMemberTransaction(id: string) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
   const { error } = await supabase.from("member_transactions").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export type PresentationPost = { id: string; title: string; body_text: string; image_url?: string | null; storage_path?: string | null; sort_order: number; is_visible: boolean; created_at?: string };
+
+export async function listPresentationPosts(includeHidden = false) {
+  if (!supabase) return [] as PresentationPost[];
+  let query = supabase.from("presentation_posts").select("id, title, body_text, image_url, storage_path, sort_order, is_visible, created_at").order("sort_order", { ascending: true }).order("created_at", { ascending: true });
+  if (!includeHidden) query = query.eq("is_visible", true);
+  const { data, error } = await query;
+  if (error) { if (error.code === "42P01" || error.message.includes("presentation_posts")) return []; throw error; }
+  return (data ?? []) as PresentationPost[];
+}
+
+export async function createPresentationPost(input: { title: string; bodyText: string; imageUrl?: string | null; storagePath?: string | null; sortOrder: number }) {
+  if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
+  const { data, error } = await supabase.from("presentation_posts").insert({ title: input.title.trim(), body_text: input.bodyText.trim(), image_url: input.imageUrl ?? null, storage_path: input.storagePath ?? null, sort_order: input.sortOrder, is_visible: true }).select().single();
+  if (error) throw error;
+  return data as PresentationPost;
+}
+
+export async function updatePresentationPost(id: string, values: Partial<Pick<PresentationPost, "title" | "body_text" | "image_url" | "storage_path" | "sort_order" | "is_visible">>) {
+  if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
+  const { error } = await supabase.from("presentation_posts").update({ ...values, updated_at: new Date().toISOString() }).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deletePresentationPost(id: string) {
+  if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
+  const { error } = await supabase.from("presentation_posts").delete().eq("id", id);
   if (error) throw error;
 }
 

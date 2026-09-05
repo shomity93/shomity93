@@ -1,7 +1,7 @@
 import { supabase } from "./supabase";
 import { compressUpload } from "./imageCompression";
 
-export type UploadFolder = "gallery" | "members" | "receipts" | "vouchers" | "branding";
+export type UploadFolder = "gallery" | "members" | "receipts" | "vouchers" | "branding" | "presentation";
 
 export function validateCooperativeUpload(file: Pick<File, "name" | "size" | "type">) {
   const supported = file.type.startsWith("image/") || file.type === "application/pdf";

@@ -133,3 +133,45 @@ CREATE POLICY "approved editors update cooperative files" ON storage.objects
 CREATE POLICY "approved admins delete cooperative files" ON storage.objects
   FOR DELETE TO authenticated
   USING (bucket_id = 'cooperative-files' AND is_coop_admin());
+
+-- Expanded member onboarding and approval-request migration
+alter table public.member_invites add column if not exists country text;
+alter table public.member_invites add column if not exists country_code text;
+alter table public.member_invites add column if not exists national_id text;
+alter table public.member_invites add column if not exists passport_number text;
+alter table public.cooperative_members add column if not exists country text;
+alter table public.cooperative_members add column if not exists country_code text;
+alter table public.cooperative_members add column if not exists national_id text;
+alter table public.cooperative_members add column if not exists passport_number text;
+
+drop policy if exists "public can request member invite" on public.member_invites;
+create policy "public can request member invite" on public.member_invites
+for insert to anon, authenticated
+with check (status = 'pending');
+
+drop policy if exists "public can view approved invite" on public.member_invites;
+create policy "public can view approved invite" on public.member_invites
+for select to anon, authenticated
+using (status = 'approved');
+
+-- Unlimited editable homepage presentation posts
+create table if not exists public.presentation_posts (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  body_text text not null default '',
+  image_url text,
+  storage_path text,
+  sort_order integer not null default 0,
+  is_visible boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.presentation_posts enable row level security;
+drop policy if exists "public can view presentation posts" on public.presentation_posts;
+drop policy if exists "admin manages presentation posts" on public.presentation_posts;
+create policy "public can view presentation posts" on public.presentation_posts
+for select to anon, authenticated using (is_visible = true);
+create policy "admin manages presentation posts" on public.presentation_posts
+for all to authenticated using (is_coop_admin()) with check (is_coop_admin());
+alter publication supabase_realtime add table public.presentation_posts;
