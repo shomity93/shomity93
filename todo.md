@@ -132,3 +132,8 @@
 - [x] Add focused tests for report selection/aggregation and preserve existing auth/permission/upload regression coverage
 - [x] Render separate printable sections for each member in the member-sheets report
 - [x] Add deterministic helper/test coverage for separate per-member report output
+- [x] Fix Admin email being classified as pending approval instead of approved Admin
+- [x] Verify the production Admin auth user, cooperative_members row, approved member_invites row, and RLS lookup path match by normalized email
+- [ ] Re-test the protected /hisab login flow after the Admin linkage fix and confirm the latest client bundle is deployed
+- [x] Directly verify the Supabase Auth user for shomity93@gmail.com and document its linkage to cooperative_members.auth_user_id
+- [x] Re-check approved invite/profile lookup end-to-end against production after the invite repair
