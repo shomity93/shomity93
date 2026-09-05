@@ -22,4 +22,13 @@ describe("cooperative permissions", () => {
     expect(can("admin", "delete")).toBe(true);
     expect(can("admin", "manageMembers")).toBe(true);
   });
+
+  it("applies the same role contract to member-wise deposit, withdrawal, fine, and loan sheets", () => {
+    expect(can("moderator", "create")).toBe(true);
+    expect(can("moderator", "edit")).toBe(true);
+    expect(can("moderator", "delete")).toBe(false);
+    expect(can("member", "create")).toBe(false);
+    expect(can("admin", "create")).toBe(true);
+    expect(can("admin", "delete")).toBe(true);
+  });
 });

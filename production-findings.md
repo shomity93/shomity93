@@ -16,3 +16,7 @@
 
 - The live site at 2026-09-05 06:54 still shows the old mixed-language auth copy and the old CMS/presentation content, confirming that commit b9df211 has not reached the public Netlify deployment yet.
 - The dialog is interactive and its login/signup fields are visible to the browser, but the deployment remains stale until a Netlify deploy is triggered.
+
+- On the latest check after commit 2c91207, https://shomity93.netlify.app still exposes the older `সদস্য প্রবেশ` label and right-aligned navigation; the corrected local `সদস্য / এডমিন প্রবেশ` label and left-to-right layout are not yet deployed.
+- The live dialog remains browser-detectable and interactive, but its surface is visibly more transparent than the corrected local modal. Netlify must be manually redeployed before the final live UI verification can be marked complete.
+- The connected Supabase REST project currently returns zero approved rows for both `cooperative_members` and `member_invites`; no approved Admin/member record is visible through the current public RLS surface. An authenticated Admin must be created or promoted manually in Supabase.

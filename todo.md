@@ -99,3 +99,18 @@
 - [ ] Verify gallery ordering and visibility persistence end-to-end against the real Supabase project
 - [x] Show a visible Bengali migration warning when gallery visibility cannot be changed on an unmigrated project
 - [ ] Verify gallery create, reorder, and visibility-toggle behavior on an unmigrated project without silent failure
+- [x] Apply the supplied Admin identity (shomity93@gmail.com / Ahmmed Ullah) to the real Supabase project and verify role=admin, status=approved
+- [x] Apply the complete non-destructive gallery visibility, invite-policy, and database-backed RBAC migration in the real Supabase project
+- [x] Restore visible post-signup/signin session state and Bengali sign-out control
+- [x] Make Admin data-entry forms visible and role-aware after approved Admin login
+- [x] Repair compressed uploads for logo, site/profile photos, member photos, receipts, and vouchers with clear errors
+- [x] Create or verify per-member sheets for deposits, withdrawals, fines, loans, and member-linked ledger history
+- [x] Recalculate dashboard totals automatically for every new member sheet and ledger entry
+- [x] Replace broken direct PDF/error-text download with a usable export/print choice flow
+- [x] Add regression coverage for auth session, uploads, member sheets, dashboard aggregation, and print/export behavior
+- [x] Apply and verify the cooperative-files Storage bucket/object policies in the real Supabase project
+- [x] Apply and verify the member_transactions migration and member-specific history in the real Supabase project
+- [ ] Verify dashboard totals update for member deposits/fines versus withdrawals/loans
+- [ ] Add automated tests for Supabase sign-out/session events, upload error paths, dashboard aggregation, and print/PDF action behavior
+- [x] Separately verify the cooperative-files bucket row exists in the real Supabase project
+- [ ] Verify one real member transaction through the app or user-provided accounting data without inserting fabricated financial data

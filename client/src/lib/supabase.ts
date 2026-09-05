@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { calculateDashboardTotals } from "@shared/accounting";
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
@@ -29,6 +30,7 @@ export async function signUpApprovedMember(input: { email: string; password: str
     const { error: profileError } = await supabase.from("cooperative_members").upsert({ auth_user_id: data.user.id, member_id: input.memberId, full_name: input.fullName, email: input.email.trim().toLowerCase(), phone: input.phone, photo_url: input.photoUrl ?? null, role: "member", status: "approved" }, { onConflict: "member_id" });
     if (profileError) throw profileError;
   }
+  if (data.session) window.dispatchEvent(new Event("supabase-session-changed"));
   return data;
 }
 
@@ -38,21 +40,29 @@ export async function signInMember(email: string, password: string) {
   if (!approved) throw new Error("আপনার সদস্যপদ এখনও এডমিন অনুমোদন করেননি");
   const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
   if (error) throw error;
+  window.dispatchEvent(new Event("supabase-session-changed"));
   return data;
+}
+
+export async function signOutMember() {
+  if (!supabase) return;
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+  window.dispatchEvent(new Event("supabase-session-changed"));
 }
 
 export async function getCurrentMember() {
   if (!supabase) return null;
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) return null;
-  const { data, error } = await supabase.from("cooperative_members").select("id, member_id, full_name, phone, photo_url, role, status").eq("auth_user_id", authData.user.id).maybeSingle();
+  const { data, error } = await supabase.from("cooperative_members").select("id, auth_user_id, member_id, full_name, phone, photo_url, role, status").eq("auth_user_id", authData.user.id).maybeSingle();
   if (error) throw error;
   return data;
 }
 
 export async function listDeposits() {
   if (!supabase) return [];
-  const { data, error } = await supabase.from("deposits").select("id, transaction_id, occurred_on, category, amount, payment_method, receipt_url, receipt_name, receipt_type, receipt_size, member:cooperative_members(member_id, full_name), entered_by").order("occurred_on", { ascending: false });
+  const { data, error } = await supabase.from("deposits").select("id, transaction_id, occurred_on, category, amount, payment_method, receipt_url, receipt_name, receipt_type, receipt_size, member:cooperative_members(id, member_id, full_name), entered_by").order("occurred_on", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
@@ -66,7 +76,7 @@ export async function listExpenses() {
 
 export async function listApprovedMembers() {
   if (!supabase) return [];
-  const { data, error } = await supabase.from("cooperative_members").select("id, member_id, full_name, phone, photo_url, role").eq("status", "approved").order("created_at", { ascending: true });
+  const { data, error } = await supabase.from("cooperative_members").select("id, member_id, full_name, phone, photo_url, role, status").eq("status", "approved").order("created_at", { ascending: true });
   if (error) throw error;
   return data ?? [];
 }
@@ -105,17 +115,17 @@ export async function createAdminInvite(input: { email: string; memberId: string
 
 export async function getDashboardTotals() {
   if (!supabase) return null;
-  const [{ data: deposits }, { data: expenses }] = await Promise.all([supabase.from("deposits").select("amount"), supabase.from("expenses").select("total_amount")]);
-  const totalDeposits = (deposits ?? []).reduce((sum, row) => sum + Number(row.amount), 0);
-  const totalExpenses = (expenses ?? []).reduce((sum, row) => sum + Number(row.total_amount), 0);
-  return { totalDeposits, totalExpenses, currentFund: totalDeposits - totalExpenses };
+  const [{ data: deposits }, { data: expenses }, transactionResult] = await Promise.all([supabase.from("deposits").select("amount"), supabase.from("expenses").select("total_amount"), supabase.from("member_transactions").select("transaction_type, amount")]);
+  const transactions = transactionResult.error ? [] : (transactionResult.data ?? []);
+  return calculateDashboardTotals((deposits ?? []).map((row) => row.amount), (expenses ?? []).map((row) => row.total_amount), transactions as Array<{ transaction_type: "deposit" | "withdrawal" | "fine" | "loan"; amount: number | string }>);
 }
 
 export async function uploadMemberPhoto(file: File, memberId: string) {
   if (!supabase) return URL.createObjectURL(file);
-  const path = `members/${memberId}-${Date.now()}-${file.name}`;
-  const { error } = await supabase.storage.from("cooperative-files").upload(path, file, { upsert: false, contentType: file.type });
-  if (error) throw error;
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+  const path = `members/${memberId}-${Date.now()}-${safeName}`;
+  const { error } = await supabase.storage.from("cooperative-files").upload(path, file, { upsert: false, contentType: file.type || "image/jpeg" });
+  if (error) throw new Error(`প্রোফাইল ছবি সংরক্ষণ করা যায়নি: ${error.message}`);
   return supabase.storage.from("cooperative-files").getPublicUrl(path).data.publicUrl;
 }
 
@@ -128,7 +138,7 @@ export async function updateInviteStatus(inviteId: string, status: "approved" | 
 
 export async function subscribeToLedgerChanges(onChange: () => void) {
   if (!supabase) return () => undefined;
-  const channel = supabase.channel("সমিতি-হিসাব-খাতা").on("postgres_changes", { event: "*", schema: "public", table: "deposits" }, onChange).on("postgres_changes", { event: "*", schema: "public", table: "expenses" }, onChange).on("postgres_changes", { event: "*", schema: "public", table: "cooperative_members" }, onChange).subscribe();
+  const channel = supabase.channel("সমিতি-হিসাব-খাতা").on("postgres_changes", { event: "*", schema: "public", table: "deposits" }, onChange).on("postgres_changes", { event: "*", schema: "public", table: "expenses" }, onChange).on("postgres_changes", { event: "*", schema: "public", table: "member_transactions" }, onChange).on("postgres_changes", { event: "*", schema: "public", table: "cooperative_members" }, onChange).subscribe();
   return () => { void supabase.removeChannel(channel); };
 }
 
@@ -201,6 +211,34 @@ export async function subscribeToPublicContentChanges(onChange: () => void) {
   if (!supabase) return () => undefined;
   const channel = supabase.channel("সমিতি-পাবলিক-কনটেন্ট").on("postgres_changes", { event: "*", schema: "public", table: "gallery" }, onChange).on("postgres_changes", { event: "*", schema: "public", table: "site_settings" }, onChange).subscribe();
   return () => { void supabase.removeChannel(channel); };
+}
+
+export type MemberTransaction = { id: string; member_id: string; transaction_date: string; transaction_type: "deposit" | "withdrawal" | "fine" | "loan"; description: string; amount: number; payment_method: string; attachment_url?: string | null; attachment_name?: string | null; attachment_type?: string | null; attachment_size?: number | null; entered_by?: string | null; member?: { id: string; member_id: string; full_name: string } | Array<{ id: string; member_id: string; full_name: string }> | null };
+
+export async function listMemberTransactions() {
+  if (!supabase) return [] as MemberTransaction[];
+  const { data, error } = await supabase.from("member_transactions").select("id, member_id, transaction_date, transaction_type, description, amount, payment_method, attachment_url, attachment_name, attachment_type, attachment_size, entered_by, member:cooperative_members(id, member_id, full_name)").order("transaction_date", { ascending: false }).order("created_at", { ascending: false });
+  if (error) { if (error.code === "42P01" || error.message.includes("member_transactions")) return []; throw error; }
+  return (data ?? []) as MemberTransaction[];
+}
+
+export async function createMemberTransaction(values: Record<string, unknown>) {
+  if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
+  const { data, error } = await supabase.from("member_transactions").insert(values).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateMemberTransaction(id: string, values: Record<string, unknown>) {
+  if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
+  const { error } = await supabase.from("member_transactions").update(values).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteMemberTransaction(id: string) {
+  if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
+  const { error } = await supabase.from("member_transactions").delete().eq("id", id);
+  if (error) throw error;
 }
 
 export async function updateMemberPhoto(memberRowId: string, photoUrl: string) {

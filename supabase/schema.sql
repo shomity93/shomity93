@@ -73,3 +73,63 @@ alter table site_settings add column if not exists logo_url text;
 alter table site_settings add column if not exists logo_path text;
 drop policy if exists "admin updates member photos" on cooperative_members;
 create policy "admin updates member photos" on cooperative_members for update to authenticated using (is_coop_admin()) with check (is_coop_admin());
+
+-- Per-member transaction ledger for deposits, withdrawals, fines, and loans
+DO $$ BEGIN
+  CREATE TYPE member_transaction_type AS ENUM ('deposit', 'withdrawal', 'fine', 'loan');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+CREATE TABLE IF NOT EXISTS member_transactions (
+  id uuid primary key default gen_random_uuid(),
+  member_id uuid references cooperative_members(id) on delete cascade not null,
+  transaction_date date not null default current_date,
+  transaction_type member_transaction_type not null,
+  description text not null,
+  amount numeric(12,2) not null check (amount > 0),
+  payment_method text not null default 'cash',
+  attachment_url text,
+  attachment_name text,
+  attachment_type text,
+  attachment_size integer,
+  entered_by uuid references auth.users(id),
+  created_at timestamptz not null default now()
+);
+
+ALTER TABLE member_transactions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "approved users view member transactions" ON member_transactions;
+DROP POLICY IF EXISTS "editors add member transactions" ON member_transactions;
+DROP POLICY IF EXISTS "editors update member transactions" ON member_transactions;
+DROP POLICY IF EXISTS "admins delete member transactions" ON member_transactions;
+CREATE POLICY "approved users view member transactions" ON member_transactions
+  FOR SELECT TO authenticated USING (true);
+CREATE POLICY "editors add member transactions" ON member_transactions
+  FOR INSERT TO authenticated WITH CHECK (is_coop_editor());
+CREATE POLICY "editors update member transactions" ON member_transactions
+  FOR UPDATE TO authenticated USING (is_coop_editor()) WITH CHECK (is_coop_editor());
+CREATE POLICY "admins delete member transactions" ON member_transactions
+  FOR DELETE TO authenticated USING (is_coop_admin());
+
+ALTER PUBLICATION supabase_realtime ADD TABLE member_transactions;
+
+-- Storage bucket and policies used by compressed logo/member/receipt/voucher uploads
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('cooperative-files', 'cooperative-files', true)
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+DROP POLICY IF EXISTS "public can view cooperative files" ON storage.objects;
+DROP POLICY IF EXISTS "approved editors upload cooperative files" ON storage.objects;
+DROP POLICY IF EXISTS "approved editors update cooperative files" ON storage.objects;
+DROP POLICY IF EXISTS "approved admins delete cooperative files" ON storage.objects;
+CREATE POLICY "public can view cooperative files" ON storage.objects
+  FOR SELECT TO public USING (bucket_id = 'cooperative-files');
+CREATE POLICY "approved editors upload cooperative files" ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'cooperative-files' AND is_coop_editor());
+CREATE POLICY "approved editors update cooperative files" ON storage.objects
+  FOR UPDATE TO authenticated
+  USING (bucket_id = 'cooperative-files' AND is_coop_editor())
+  WITH CHECK (bucket_id = 'cooperative-files' AND is_coop_editor());
+CREATE POLICY "approved admins delete cooperative files" ON storage.objects
+  FOR DELETE TO authenticated
+  USING (bucket_id = 'cooperative-files' AND is_coop_admin());
