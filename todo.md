@@ -146,3 +146,6 @@
 - [ ] Deploy the member transaction save-path fix and re-test one real Admin/Moderator member-transaction save in production, confirming dashboard refresh
 - [x] Directly verify the production foreign key from member_transactions.member_id to cooperative_members.id
 - [ ] Verify the live UI shows the detailed Bengali Supabase error or success state after deployment
+- [x] Re-audit production against the latest checkpoint and confirm whether Netlify is serving the current bundle
+- [x] Verify the live production asset/version marker and compare it with the latest repository commit
+- [ ] Re-verify live CMS/accounting behavior after resolving any deployment mismatch
