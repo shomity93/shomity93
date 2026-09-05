@@ -10,14 +10,14 @@ export async function sendMemberStatusEmail(input: { email: string; fullName: st
   const senderName = process.env.BREVO_SENDER_NAME ?? "সমিতি-নাইন্টি ত্রি";
 
   if (!apiKey || !senderEmail) {
-    return { sent: false as const, reason: "Brevo API key বা verified sender email কনফিগার করা হয়নি" };
+    return { sent: false as const, reason: "Brevo API কী বা যাচাইকৃত প্রেরক ইমেইল কনফিগার করা হয়নি" };
   }
 
   const approved = input.status === "approved";
   const subject = approved ? "সমিতি-নাইন্টি ত্রি: সদস্য অনুমোদন সম্পন্ন" : "সমিতি-নাইন্টি ত্রি: সদস্যপদ স্থগিত";
   const message = approved
-    ? "আপনার সদস্য আবেদন Admin অনুমোদন করেছেন। এখন আপনার email ও password দিয়ে নিরাপদ হিসাব ব্যবস্থাপনায় প্রবেশ করতে পারবেন।"
-    : "আপনার সদস্যপদ বর্তমানে স্থগিত করা হয়েছে। বিস্তারিত জানতে সমিতির Admin-এর সঙ্গে যোগাযোগ করুন।";
+    ? "আপনার সদস্যতার আবেদন এডমিন অনুমোদন করেছেন। এখন আপনার ইমেইল ও পাসওয়ার্ড দিয়ে নিরাপদ হিসাব ব্যবস্থাপনায় প্রবেশ করতে পারবেন।"
+    : "আপনার সদস্যপদ বর্তমানে স্থগিত করা হয়েছে। বিস্তারিত জানতে সমিতির এডমিনের সঙ্গে যোগাযোগ করুন।";
 
   const response = await fetch(BREVO_ENDPOINT, {
     method: "POST",
@@ -32,7 +32,7 @@ export async function sendMemberStatusEmail(input: { email: string; fullName: st
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => "");
-    throw new Error(`Brevo email পাঠানো যায়নি (${response.status})${errorText ? `: ${errorText.slice(0, 180)}` : ""}`);
+    throw new Error(`Brevo ইমেইল পাঠানো যায়নি (${response.status})${errorText ? `: ${errorText.slice(0, 180)}` : ""}`);
   }
 
   return { sent: true as const };
@@ -49,7 +49,7 @@ export async function sendMemberStatusEmailForSupabaseAdmin(input: { email: stri
 
   const { data: member, error: memberError } = await client.from("cooperative_members").select("role, status").eq("auth_user_id", authData.user.id).maybeSingle();
   if (memberError) throw memberError;
-  if (!member || member.role !== "admin" || member.status !== "approved") throw new Error("শুধু অনুমোদিত Admin notification পাঠাতে পারবেন");
+  if (!member || member.role !== "admin" || member.status !== "approved") throw new Error("শুধু অনুমোদিত এডমিন সদস্য-অবস্থা সংক্রান্ত ইমেইল পাঠাতে পারবেন");
 
   return sendMemberStatusEmail({ email: input.email, fullName: input.fullName, status: input.status });
 }

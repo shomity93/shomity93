@@ -78,9 +78,11 @@
 - [x] Add a visible right-to-left hero slide transition while retaining 5-second looping
 - [x] Make “আরও জানুন” scroll to the About presentation section
 - [x] Localize remaining visible admin labels and public explanatory text into Bengali
-- [ ] Compress Admin member photo replacements before Storage upload
-- [ ] Replace remaining user-visible English or mixed auth/admin strings with fully Bengali copy
-- [ ] Add explicit focus-visible styling for mobile auth dialog controls
-- [ ] Use the saved logo in an additional homepage presentation surface
+- [x] Compress Admin member photo replacements before Storage upload
+- [x] Replace remaining user-visible English or mixed auth/admin strings with fully Bengali copy
+- [x] Add explicit focus-visible styling for mobile auth dialog controls
+- [x] Use the saved logo in an additional homepage presentation surface
 - [ ] Trigger/publish the latest Netlify deploy and re-verify the live mobile auth, CMS, slider, and CTA paths
 - [ ] Resolve all remaining auth visibility, responsive, localization, CMS, compression, repository, and production-verification issues in one final pass
+- [ ] Translate remaining user-facing Brevo email content and Netlify function/API error messages into fully Bengali wording
+- [ ] Trigger/publish the latest Netlify deploy and re-check production auth and mixed-language strings
