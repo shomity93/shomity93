@@ -159,6 +159,6 @@
 - [ ] Re-verify the complete published flow after the combined repair
 - [ ] Deploy commit d0628e3 or later and verify the public member-directory view, visible gallery slider, and live approved-member cards
 - [ ] Verify the deferred receipt upload and transaction save through the live Admin flow without fabricated financial data
-- [ ] Explain and repair gallery image title showing as a numeric value instead of editable Bengali text
-- [ ] Re-audit the newest gallery, CMS, member visibility, accounting, member-sheet, and deployment changes together
+- [x] Explain and repair gallery image title showing as a numeric value instead of editable Bengali text
+- [x] Re-audit the newest gallery, CMS, member visibility, accounting, member-sheet, and deployment changes together
 - [ ] Verify the new gallery text-entry flow after the next published deployment
