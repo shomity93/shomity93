@@ -21,23 +21,16 @@ export async function findApprovedMember(email: string) {
 export async function requestMemberApproval(input: { email: string; fullName: string; phone: string; memberId: string; country?: string; countryCode?: string; nationalId?: string; passportNumber?: string }) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
   const payload = { email: input.email.trim().toLowerCase(), member_id: input.memberId.trim(), full_name: input.fullName.trim(), phone: input.phone.trim(), country: input.country?.trim() || null, country_code: input.countryCode?.trim() || null, national_id: input.nationalId?.trim() || null, passport_number: input.passportNumber?.trim() || null, status: "pending" as const };
-  const { data, error } = await supabase.from("member_invites").upsert(payload, { onConflict: "email" }).select().single();
+  const { data, error } = await supabase.rpc("request_member_approval", { p_email: payload.email, p_member_id: payload.member_id, p_full_name: payload.full_name, p_phone: payload.phone, p_country: payload.country, p_country_code: payload.country_code, p_national_id: payload.national_id, p_passport_number: payload.passport_number });
   if (error) throw error;
   return data;
 }
 
 async function syncApprovedMemberProfile(input: { email: string; fullName: string; phone: string; memberId: string; country?: string; countryCode?: string; nationalId?: string; passportNumber?: string; photoUrl?: string | null }, userId: string) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
-  const email = input.email.trim().toLowerCase();
-  const { data: existing, error: existingError } = await supabase.from("cooperative_members").select("id, role, status").eq("email", email).maybeSingle();
-  if (existingError) throw existingError;
-  const profilePayload = { auth_user_id: userId, member_id: input.memberId.trim(), full_name: input.fullName.trim(), email, phone: input.phone.trim(), country: input.country?.trim() || null, country_code: input.countryCode?.trim() || null, national_id: input.nationalId?.trim() || null, passport_number: input.passportNumber?.trim() || null, photo_url: input.photoUrl ?? null };
-  const query = existing ? supabase.from("cooperative_members").update(profilePayload).eq("id", existing.id).select("id").single() : supabase.from("cooperative_members").insert({ ...profilePayload, role: "member", status: "approved" }).select("id").single();
-  const { data: profile, error: profileError } = await query;
-  if (profileError) throw profileError;
-  const { error: sheetError } = await supabase.from("member_sheets").upsert({ member_id: profile.id }, { onConflict: "member_id" });
-  if (sheetError && sheetError.code !== "42P01") throw sheetError;
-  return profile;
+  const { data, error } = await supabase.rpc("sync_approved_member_profile", { p_email: input.email.trim().toLowerCase(), p_full_name: input.fullName.trim(), p_phone: input.phone.trim(), p_member_id: input.memberId.trim(), p_country: input.country?.trim() || null, p_country_code: input.countryCode?.trim() || null, p_national_id: input.nationalId?.trim() || null, p_passport_number: input.passportNumber?.trim() || null, p_photo_url: input.photoUrl ?? null });
+  if (error) throw error;
+  return { id: data, auth_user_id: userId };
 }
 
 export async function signUpApprovedMember(input: { email: string; password: string; fullName: string; phone: string; memberId: string; country?: string; countryCode?: string; nationalId?: string; passportNumber?: string; photoFile?: File }) {

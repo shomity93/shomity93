@@ -182,3 +182,10 @@
 - [x] Analyze 183528.mp4 frame by frame and document the exact accounting-entry failure
 - [x] Repair the confirmed accounting save path without changing member onboarding records
 - [ ] Verify one manual accounting entry path after the repair using user-provided data only
+- [x] Repair Admin login and approved-member signup RLS block shown in 183547.jpg
+- [x] Replace object-object error rendering with readable Bengali Supabase/Auth messages
+- [ ] Verify Admin Auth/profile linkage and signup profile/sheet persistence without inserting test data
+- [x] Apply secure signup/profile RPC policies without changing member onboarding records
+- [x] Repair video-confirmed accounting save and receipt-selection reset together
+- [x] Normalize all object errors into readable Bengali messages and verify centered profile photos
+- [ ] Run final mobile visual and production-ready validation before deployment

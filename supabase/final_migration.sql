@@ -162,3 +162,46 @@ select id, member_id, full_name, photo_url
 from public.cooperative_members
 where status = 'approved';
 grant select on public.member_directory to anon, authenticated;
+
+-- Secure onboarding RPCs: avoid broad public writes while allowing approval requests and approved profile/sheet sync.
+create or replace function public.request_member_approval(
+  p_email text, p_member_id text, p_full_name text, p_phone text,
+  p_country text default null, p_country_code text default null,
+  p_national_id text default null, p_passport_number text default null
+) returns public.member_invites language plpgsql security definer set search_path = public as $$
+declare existing public.member_invites;
+begin
+  if nullif(trim(p_email), '') is null or nullif(trim(p_member_id), '') is null or nullif(trim(p_full_name), '') is null or nullif(trim(p_phone), '') is null then raise exception 'ইমেইল, সদস্য আইডি, নাম ও মোবাইল নম্বর প্রয়োজন'; end if;
+  select * into existing from public.member_invites where lower(email) = lower(trim(p_email)) limit 1;
+  if existing.id is not null then
+    if existing.status in ('approved', 'suspended') then return existing; end if;
+    update public.member_invites set member_id = trim(p_member_id), full_name = trim(p_full_name), phone = trim(p_phone), country = nullif(trim(coalesce(p_country, '')), ''), country_code = nullif(trim(coalesce(p_country_code, '')), ''), national_id = nullif(trim(coalesce(p_national_id, '')), ''), passport_number = nullif(trim(coalesce(p_passport_number, '')), ''), status = 'pending' where id = existing.id returning * into existing;
+    return existing;
+  end if;
+  insert into public.member_invites (email, member_id, full_name, phone, country, country_code, national_id, passport_number, status) values (lower(trim(p_email)), trim(p_member_id), trim(p_full_name), trim(p_phone), nullif(trim(coalesce(p_country, '')), ''), nullif(trim(coalesce(p_country_code, '')), ''), nullif(trim(coalesce(p_national_id, '')), ''), nullif(trim(coalesce(p_passport_number, '')), ''), 'pending') returning * into existing;
+  return existing;
+end; $$;
+grant execute on function public.request_member_approval(text, text, text, text, text, text, text, text) to anon, authenticated;
+
+create or replace function public.sync_approved_member_profile(
+  p_email text, p_full_name text, p_phone text, p_member_id text,
+  p_country text default null, p_country_code text default null,
+  p_national_id text default null, p_passport_number text default null,
+  p_photo_url text default null
+) returns uuid language plpgsql security definer set search_path = public as $$
+declare current_user_id uuid := auth.uid(); approved_invite public.member_invites; existing public.cooperative_members; profile_id uuid;
+begin
+  if current_user_id is null then raise exception 'সেশন পাওয়া যায়নি; আবার লগইন করুন'; end if;
+  if lower(coalesce(auth.jwt() ->> 'email', '')) <> lower(trim(p_email)) then raise exception 'লগইন ইমেইল ও সদস্য ইমেইল মিলছে না'; end if;
+  select * into approved_invite from public.member_invites where lower(email) = lower(trim(p_email)) and lower(member_id) = lower(trim(p_member_id)) and status = 'approved' limit 1;
+  if approved_invite.id is null then raise exception 'এই email ও সদস্য ID-এর Admin অনুমোদন পাওয়া যায়নি'; end if;
+  select * into existing from public.cooperative_members where lower(email) = lower(trim(p_email)) limit 1;
+  if existing.id is not null then
+    update public.cooperative_members set auth_user_id = current_user_id, member_id = trim(p_member_id), full_name = trim(p_full_name), phone = trim(p_phone), country = nullif(trim(coalesce(p_country, '')), ''), country_code = nullif(trim(coalesce(p_country_code, '')), ''), national_id = nullif(trim(coalesce(p_national_id, '')), ''), passport_number = nullif(trim(coalesce(p_passport_number, '')), ''), photo_url = coalesce(nullif(trim(coalesce(p_photo_url, '')), ''), existing.photo_url), status = 'approved' where id = existing.id returning id into profile_id;
+  else
+    insert into public.cooperative_members (auth_user_id, member_id, full_name, email, phone, country, country_code, national_id, passport_number, photo_url, role, status) values (current_user_id, trim(p_member_id), trim(p_full_name), lower(trim(p_email)), trim(p_phone), nullif(trim(coalesce(p_country, '')), ''), nullif(trim(coalesce(p_country_code, '')), ''), nullif(trim(coalesce(p_national_id, '')), ''), nullif(trim(coalesce(p_passport_number, '')), ''), nullif(trim(coalesce(p_photo_url, '')), ''), 'member', 'approved') returning id into profile_id;
+  end if;
+  insert into public.member_sheets (member_id) values (profile_id) on conflict (member_id) do nothing;
+  return profile_id;
+end; $$;
+grant execute on function public.sync_approved_member_profile(text, text, text, text, text, text, text, text, text) to authenticated;
