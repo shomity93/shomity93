@@ -156,7 +156,7 @@ export async function getDashboardTotals() {
   if (!supabase) return null;
   const [{ data: deposits }, { data: expenses }, transactionResult] = await Promise.all([supabase.from("deposits").select("amount"), supabase.from("expenses").select("total_amount"), supabase.from("member_transactions").select("transaction_type, amount")]);
   const transactions = transactionResult.error ? [] : (transactionResult.data ?? []);
-  return calculateDashboardTotals((deposits ?? []).map((row) => row.amount), (expenses ?? []).map((row) => row.total_amount), transactions as Array<{ transaction_type: "deposit" | "withdrawal" | "fine" | "loan"; amount: number | string }>);
+  return calculateDashboardTotals((deposits ?? []).map((row) => row.amount), (expenses ?? []).map((row) => row.total_amount), transactions.filter((row) => row.transaction_type !== "deposit") as Array<{ transaction_type: "deposit" | "withdrawal" | "fine" | "loan"; amount: number | string }>);
 }
 
 export async function uploadMemberPhoto(file: File, memberId: string) {
@@ -257,9 +257,29 @@ export type MemberTransaction = { id: string; member_id: string; transaction_dat
 
 export async function listMemberTransactions() {
   if (!supabase) return [] as MemberTransaction[];
-  const { data, error } = await supabase.from("member_transactions").select("id, member_id, transaction_date, transaction_type, description, amount, payment_method, attachment_url, attachment_name, attachment_type, attachment_size, entered_by, member:cooperative_members(id, member_id, full_name)").order("transaction_date", { ascending: false }).order("created_at", { ascending: false });
-  if (error) { if (error.code === "42P01" || error.message.includes("member_transactions")) return []; throw error; }
-  return (data ?? []) as MemberTransaction[];
+  const [transactionResult, depositResult] = await Promise.all([
+    supabase.from("member_transactions").select("id, member_id, transaction_date, transaction_type, description, amount, payment_method, attachment_url, attachment_name, attachment_type, attachment_size, entered_by, member:cooperative_members(id, member_id, full_name)").order("transaction_date", { ascending: false }).order("created_at", { ascending: false }),
+    supabase.from("deposits").select("id, member_id, occurred_on, transaction_id, amount, payment_method, receipt_url, receipt_name, receipt_type, receipt_size, entered_by, member:cooperative_members(id, member_id, full_name)").order("occurred_on", { ascending: false }),
+  ]);
+  if (transactionResult.error && transactionResult.error.code !== "42P01" && !transactionResult.error.message.includes("member_transactions")) throw transactionResult.error;
+  if (depositResult.error) throw depositResult.error;
+  const directRows = ((transactionResult.data ?? []) as MemberTransaction[]).filter((row) => row.transaction_type !== "deposit");
+  const depositRows = (depositResult.data ?? []).map((row) => ({
+    id: `deposit:${row.id}`,
+    member_id: row.member_id,
+    transaction_date: row.occurred_on,
+    transaction_type: "deposit" as const,
+    description: row.transaction_id || "জমা",
+    amount: Number(row.amount),
+    payment_method: row.payment_method,
+    attachment_url: row.receipt_url,
+    attachment_name: row.receipt_name,
+    attachment_type: row.receipt_type,
+    attachment_size: row.receipt_size,
+    entered_by: row.entered_by,
+    member: row.member,
+  }));
+  return [...depositRows, ...directRows].sort((a, b) => String(b.transaction_date).localeCompare(String(a.transaction_date)));
 }
 
 const memberTransactionFields = ["member_id", "transaction_date", "transaction_type", "description", "amount", "payment_method", "attachment_url", "attachment_name", "attachment_type", "attachment_size", "entered_by"] as const;
@@ -287,6 +307,11 @@ export async function createMemberTransaction(values: Record<string, unknown>) {
   if (!payload.member_id || !payload.transaction_date || !payload.transaction_type || !payload.description || !payload.amount || !payload.payment_method) {
     throw new Error("সদস্য, তারিখ, হিসাবের ধরন, বিবরণ, পরিমাণ ও পেমেন্ট মাধ্যম পূরণ করুন");
   }
+  if (payload.transaction_type === "deposit") {
+    const { data, error } = await supabase.from("deposits").insert({ transaction_id: `MT-${String(payload.description).slice(0, 24).replace(/\s+/g, "-")}-${Date.now()}`, occurred_on: payload.transaction_date, member_id: payload.member_id, category: "monthly", amount: payload.amount, payment_method: payload.payment_method, receipt_url: payload.attachment_url ?? null, receipt_name: payload.attachment_name ?? null, receipt_type: payload.attachment_type ?? null, receipt_size: payload.attachment_size ?? null, entered_by: payload.entered_by ?? null }).select("id").single();
+    if (error) throw memberTransactionError(error);
+    return { ...payload, id: data?.id ? `deposit:${data.id}` : undefined };
+  }
   const { error } = await supabase.from("member_transactions").insert(payload);
   if (error) throw memberTransactionError(error);
   return payload;
@@ -294,13 +319,20 @@ export async function createMemberTransaction(values: Record<string, unknown>) {
 
 export async function updateMemberTransaction(id: string, values: Record<string, unknown>) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
-  const { error } = await supabase.from("member_transactions").update(normalizeMemberTransaction(values)).eq("id", id);
+  const payload = normalizeMemberTransaction(values);
+  if (id.startsWith("deposit:")) {
+    const { error } = await supabase.from("deposits").update({ occurred_on: payload.transaction_date, member_id: payload.member_id, amount: payload.amount, payment_method: payload.payment_method, receipt_url: payload.attachment_url ?? null, receipt_name: payload.attachment_name ?? null, receipt_type: payload.attachment_type ?? null, receipt_size: payload.attachment_size ?? null }).eq("id", id.slice("deposit:".length));
+    if (error) throw memberTransactionError(error);
+    return;
+  }
+  const { error } = await supabase.from("member_transactions").update(payload).eq("id", id);
   if (error) throw memberTransactionError(error);
 }
 
 export async function deleteMemberTransaction(id: string) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
-  const { error } = await supabase.from("member_transactions").delete().eq("id", id);
+  const query = id.startsWith("deposit:") ? supabase.from("deposits").delete().eq("id", id.slice("deposit:".length)) : supabase.from("member_transactions").delete().eq("id", id);
+  const { error } = await query;
   if (error) throw memberTransactionError(error);
 }
 

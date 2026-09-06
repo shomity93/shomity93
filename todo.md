@@ -189,3 +189,12 @@
 - [x] Repair video-confirmed accounting save and receipt-selection reset together
 - [x] Normalize all object errors into readable Bengali messages and verify centered profile photos
 - [ ] Run final mobile visual and production-ready validation before deployment
+- [ ] Audit and repair the remaining signup Supabase permission block
+- [ ] Repair receipt-upload save/reset behavior in accounting forms
+- [x] Make one canonical transaction source feed both ledger and member sheet without double counting
+- [x] Fix annual report data and isolated print/PDF output, including blank annual reports
+
+- [x] Add receipt actions for inline preview, full-size viewing, and file download after save
+- [x] Isolate selected monthly, annual, and member-sheet reports for print/PDF export without printing the full accounting screen
+- [ ] Verify receipt upload persistence and canonical deposit/member-sheet accounting together
+- [ ] Add regression coverage for receipt action rendering and report print isolation

@@ -3,11 +3,11 @@ import { calculateDashboardTotals } from "../shared/accounting";
 import { validateCooperativeUpload } from "../client/src/lib/cooperativeData";
 
 describe("member-wise dashboard aggregation", () => {
-  it("adds member deposits and fines to the fund", () => {
+  it("does not double count a deposit already present in the canonical deposit ledger", () => {
     expect(calculateDashboardTotals([1000], [200], [
       { transaction_type: "deposit", amount: "300" },
       { transaction_type: "fine", amount: 50 },
-    ])).toEqual({ totalDeposits: 1350, totalExpenses: 200, currentFund: 1150 });
+    ])).toEqual({ totalDeposits: 1050, totalExpenses: 200, currentFund: 850 });
   });
 
   it("subtracts member withdrawals and loans from the fund", () => {
