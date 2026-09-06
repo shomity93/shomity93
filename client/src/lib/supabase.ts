@@ -33,6 +33,12 @@ async function syncApprovedMemberProfile(input: { email: string; fullName: strin
   return { id: data, auth_user_id: userId };
 }
 
+async function syncMemberPhoto(photoUrl: string) {
+  if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
+  const { error } = await supabase.rpc("sync_member_photo", { p_photo_url: photoUrl });
+  if (error) throw error;
+}
+
 export async function signUpApprovedMember(input: { email: string; password: string; fullName: string; phone: string; memberId: string; country?: string; countryCode?: string; nationalId?: string; passportNumber?: string; photoFile?: File }) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
   const approved = await findApprovedMember(input.email);
@@ -40,13 +46,17 @@ export async function signUpApprovedMember(input: { email: string; password: str
   if (approved.status === "suspended") throw new Error("এই সদস্যপদ স্থগিত আছে। Admin Panel থেকে সদস্যকে অনুমোদন করতে হবে");
   if (approved.status !== "approved") throw new Error("এই email-এর অনুমোদন এখনো সম্পন্ন হয়নি। Admin Panel থেকে আগে অনুমোদন নিন");
   if (approved.member_id.trim().toLowerCase() !== input.memberId.trim().toLowerCase()) throw new Error("সদস্য আইডি মিলছে না");
-  let photoUrl: string | null = null;
-  if (input.photoFile) photoUrl = await uploadMemberPhoto(input.photoFile, input.memberId);
-  const { data, error } = await supabase.auth.signUp({ email: input.email.trim().toLowerCase(), password: input.password, options: { data: { full_name: input.fullName, phone: input.phone, member_id: input.memberId, country: input.country ?? null, country_code: input.countryCode ?? null, national_id: input.nationalId ?? null, passport_number: input.passportNumber ?? null, photo_url: photoUrl, role: "member" } } });
+  const { data, error } = await supabase.auth.signUp({ email: input.email.trim().toLowerCase(), password: input.password, options: { data: { full_name: input.fullName, phone: input.phone, member_id: input.memberId, country: input.country ?? null, country_code: input.countryCode ?? null, national_id: input.nationalId ?? null, passport_number: input.passportNumber ?? null, photo_url: null, role: "member" } } });
   if (error) throw error;
-  if (data.user && data.session) await syncApprovedMemberProfile({ ...input, photoUrl }, data.user.id);
+  if (data.user && data.session) {
+    await syncApprovedMemberProfile({ ...input, photoUrl: null }, data.user.id);
+    if (input.photoFile) {
+      const photoUrl = await uploadMemberPhoto(input.photoFile, input.memberId);
+      await syncMemberPhoto(photoUrl);
+    }
+  }
   if (data.session) window.dispatchEvent(new Event("supabase-session-changed"));
-  return data;
+  return { ...data, photoDeferred: Boolean(input.photoFile && !data.session) };
 }
 
 export async function signInMember(email: string, password: string) {

@@ -75,9 +75,8 @@ export default function MemberAuthDialog() {
         if (form.fullName.trim().length < 3 || form.memberId.trim().length < 3) throw new Error("নাম ও সদস্য আইডি সঠিকভাবে দিন");
         const phone = parsePhoneNumberFromString(form.phone.trim(), form.countryCode);
         if (!phone?.isValid()) throw new Error(`সঠিক মোবাইল নম্বর দিন (${selectedCountry.name} ${selectedCountry.dialCode})`);
-        if (!form.nationalId.trim() && !form.passportNumber.trim()) throw new Error("জাতীয় পরিচয়পত্র অথবা পাসপোর্ট নম্বরের যেকোনো একটি দিন");
-        await signUpApprovedMember({ ...form, phone: phone.number, country: form.country, countryCode: form.countryCode, nationalId: form.nationalId, passportNumber: form.passportNumber });
-        setMessage("সাইনআপ সফল হয়েছে; ইমেইল যাচাই করে প্রবেশ করুন");
+        const result = await signUpApprovedMember({ ...form, phone: phone.number, country: form.country, countryCode: form.countryCode, nationalId: form.nationalId, passportNumber: form.passportNumber });
+        setMessage(result.photoDeferred ? "সাইনআপ সফল হয়েছে; ইমেইল যাচাই করে লগইন করুন, তারপর প্রোফাইল ছবি সংরক্ষণ হবে" : "সাইনআপ সফল হয়েছে; ইমেইল যাচাই করে প্রবেশ করুন");
       }
     } catch (error) {
       setMessage(readableAuthError(error));
@@ -98,7 +97,7 @@ export default function MemberAuthDialog() {
           <div><Label>পূর্ণ নাম</Label><Input required value={form.fullName} onChange={(e) => update("fullName", e.target.value)} placeholder="আপনার পূর্ণ নাম" /></div>
           <div className="grid grid-cols-2 gap-3"><div><Label>সদস্য আইডি</Label><Input required value={form.memberId} onChange={(e) => update("memberId", e.target.value)} placeholder="S-001" /></div><div><Label>দেশ</Label><select required className="h-10 w-full rounded-md border border-slate-300 bg-white px-2 text-sm" value={form.countryCode} onChange={(e) => { const next = countryOptions.find((country) => country.code === e.target.value); if (next) { update("countryCode", next.code); update("country", next.name); } }}>{countryOptions.map((country) => <option key={country.code} value={country.code}>{country.name} ({country.dialCode})</option>)}</select></div></div>
           <div><Label>মোবাইল নম্বর</Label><Input required value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder={`যেমন: ${selectedCountry.dialCode} 50 123 4567`} /><p className="mt-1 text-[11px] text-slate-500">দেশের কোড স্বয়ংক্রিয়: {selectedCountry.dialCode}</p></div>
-          <div className="grid grid-cols-2 gap-3"><div><Label>জাতীয় পরিচয়পত্র নম্বর</Label><Input value={form.nationalId} onChange={(e) => update("nationalId", e.target.value)} /></div><div><Label>পাসপোর্ট নম্বর</Label><Input value={form.passportNumber} onChange={(e) => update("passportNumber", e.target.value)} /></div></div>
+          <div className="grid grid-cols-2 gap-3"><div><Label>জাতীয় পরিচয়পত্র নম্বর (ঐচ্ছিক)</Label><Input value={form.nationalId} onChange={(e) => update("nationalId", e.target.value)} /></div><div><Label>পাসপোর্ট নম্বর (ঐচ্ছিক)</Label><Input value={form.passportNumber} onChange={(e) => update("passportNumber", e.target.value)} /></div></div>
           <div className="flex items-center gap-3 rounded-lg border border-dashed border-emerald-200 bg-emerald-50 p-3"><div className="grid h-12 w-12 place-items-center overflow-hidden rounded-full bg-white text-emerald-700">{form.photoUrl ? <img src={form.photoUrl} alt="সদস্যের ছবি" className="h-full w-full object-cover object-center" /> : <ImagePlus className="h-5 w-5" />}</div><div className="min-w-0 flex-1"><strong className="block text-xs">প্রোফাইল ছবি</strong><span className="block text-[10px] text-slate-500">ছবি সংকুচিত হয়ে নিরাপদে সংরক্ষিত হবে</span></div><label className="cursor-pointer rounded-md bg-white px-2 py-1 text-xs font-bold text-emerald-700">ছবি দিন<input className="hidden" type="file" accept="image/*" onChange={onPhoto} /></label></div>
         </>}
         <div><Label>ইমেইল</Label><Input required type="email" value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="আপনার অনুমোদিত ইমেইল" /></div>

@@ -205,3 +205,24 @@ begin
   return profile_id;
 end; $$;
 grant execute on function public.sync_approved_member_profile(text, text, text, text, text, text, text, text, text) to authenticated;
+
+-- Secure post-auth profile photo synchronization for confirmed member signups.
+create or replace function public.sync_member_photo(p_photo_url text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'সেশন পাওয়া যায়নি; আবার লগইন করুন';
+  end if;
+  update public.cooperative_members
+  set photo_url = nullif(trim(coalesce(p_photo_url, '')), ''), updated_at = now()
+  where auth_user_id = auth.uid() and status = 'approved';
+  if not found then
+    raise exception 'অনুমোদিত সদস্য প্রোফাইল পাওয়া যায়নি';
+  end if;
+end;
+$$;
+grant execute on function public.sync_member_photo(text) to authenticated;
