@@ -172,4 +172,10 @@
 - [x] Repair mobile member signup failure shown as “অনুরোধটি সম্পন্ন করা যায়নি”
 - [ ] Verify approved invite, Auth user, cooperative member profile, and member sheet creation for a new member without fabricated data
 - [x] Ensure the signup submit button label is visible and the error message exposes the real Bengali cause
-- [ ] Document the exact Admin-approved member-add procedure after the repair
+- [x] Document the exact Admin-approved member-add procedure after the repair
+- [ ] Add the new approved member record with NID left blank and preserve the prior suspended record
+- [ ] Verify the new member’s profile and member-sheet linkage after signup without fabricating identity data
+- [ ] Complete the remaining onboarding/accounting/deployment-ready validation after the new member record is prepared
+- [ ] Freeze member-add production changes until the user resumes that scope
+- [ ] Make Admin Panel and হিসাব ব্যবস্থাপনা controls active and manually checkable
+- [ ] Verify accounting form visibility, receipt/save actions, dashboard refresh, and member-sheet viewing without adding members
