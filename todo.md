@@ -166,3 +166,6 @@
 - [x] Preserve all accounting fields when a receipt is selected
 - [ ] Verify and repair member transaction persistence through the live save path
 - [x] Center member profile photos in every member-card and profile surface
+- [x] Audit every Admin Panel and হিসাব ব্যবস্থাপনা button for visible Bengali labels and sufficient contrast
+- [x] Repair any button text, variant, disabled-state, or inherited-color issue found in Admin/accounting controls
+- [x] Verify button labels visually in desktop and mobile screenshots before deployment
