@@ -179,3 +179,6 @@
 - [ ] Freeze member-add production changes until the user resumes that scope
 - [ ] Make Admin Panel and হিসাব ব্যবস্থাপনা controls active and manually checkable
 - [ ] Verify accounting form visibility, receipt/save actions, dashboard refresh, and member-sheet viewing without adding members
+- [x] Analyze 183528.mp4 frame by frame and document the exact accounting-entry failure
+- [x] Repair the confirmed accounting save path without changing member onboarding records
+- [ ] Verify one manual accounting entry path after the repair using user-provided data only

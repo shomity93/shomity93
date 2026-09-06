@@ -290,9 +290,13 @@ function memberTransactionError(error: { message?: string; code?: string; detail
 
 export async function createMemberTransaction(values: Record<string, unknown>) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
-  const { data, error } = await supabase.from("member_transactions").insert(normalizeMemberTransaction(values)).select().single();
+  const payload = normalizeMemberTransaction(values);
+  if (!payload.member_id || !payload.transaction_date || !payload.transaction_type || !payload.description || !payload.amount || !payload.payment_method) {
+    throw new Error("সদস্য, তারিখ, হিসাবের ধরন, বিবরণ, পরিমাণ ও পেমেন্ট মাধ্যম পূরণ করুন");
+  }
+  const { error } = await supabase.from("member_transactions").insert(payload);
   if (error) throw memberTransactionError(error);
-  return data;
+  return payload;
 }
 
 export async function updateMemberTransaction(id: string, values: Record<string, unknown>) {
