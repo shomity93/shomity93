@@ -157,3 +157,5 @@
 - [ ] Re-review 183458.mp4 before the combined repair pass
 - [ ] Resolve the combined gallery, approved-member visibility, member-sheet, accounting form/save, CMS save, and deployment consistency failures in one pass
 - [ ] Re-verify the complete published flow after the combined repair
+- [ ] Deploy commit d0628e3 or later and verify the public member-directory view, visible gallery slider, and live approved-member cards
+- [ ] Verify the deferred receipt upload and transaction save through the live Admin flow without fabricated financial data

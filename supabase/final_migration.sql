@@ -155,3 +155,10 @@ drop policy if exists "admin manages gallery" on public.gallery;
 create policy "admin manages gallery"
   on public.gallery for all to authenticated
   using (public.is_coop_admin()) with check (public.is_coop_admin());
+
+-- Public homepage member directory: only approved member ID, name, and photo are exposed.
+create or replace view public.member_directory as
+select id, member_id, full_name, photo_url
+from public.cooperative_members
+where status = 'approved';
+grant select on public.member_directory to anon, authenticated;
