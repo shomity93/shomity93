@@ -149,3 +149,11 @@
 - [x] Re-audit production against the latest checkpoint and confirm whether Netlify is serving the current bundle
 - [x] Verify the live production asset/version marker and compare it with the latest repository commit
 - [ ] Re-verify live CMS/accounting behavior after resolving any deployment mismatch
+- [ ] Analyze uploaded 183458.mp4 frame by frame and document the exact accounting flow failures
+- [ ] Re-verify whether the Admin has a visible member transaction form in the deployed build
+- [ ] Verify how many approved members have cooperative member rows and linked transaction sheets
+- [ ] Repair the deployed accounting form visibility and transaction persistence after video review
+- [ ] Verify one real member sheet and transaction round-trip without fabricating financial data
+- [ ] Re-review 183458.mp4 before the combined repair pass
+- [ ] Resolve the combined gallery, approved-member visibility, member-sheet, accounting form/save, CMS save, and deployment consistency failures in one pass
+- [ ] Re-verify the complete published flow after the combined repair

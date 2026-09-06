@@ -98,6 +98,13 @@ export async function listApprovedMembers() {
   return data ?? [];
 }
 
+export async function listMemberSheets() {
+  if (!supabase) return [] as Array<{ id: string; member_id: string }>;
+  const { data, error } = await supabase.from("member_sheets").select("id, member_id").order("created_at", { ascending: true }).limit(100);
+  if (error) { if (error.code === "42P01") return []; throw error; }
+  return (data ?? []) as Array<{ id: string; member_id: string }>;
+}
+
 export async function listPendingInvites() {
   if (!supabase) return [];
   const { data, error } = await supabase.from("member_invites").select("id, email, member_id, full_name, phone, country, country_code, national_id, passport_number, status, created_at").in("status", ["pending", "approved"]).order("created_at", { ascending: false });
