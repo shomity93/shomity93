@@ -22,6 +22,16 @@ type AuthForm = {
   photoFile?: File;
 };
 
+function readableAuthError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  const lower = message.toLowerCase();
+  if (lower.includes("user already registered") || lower.includes("already been registered")) return "এই ইমেইলে আগে থেকেই account আছে। লগইন tab ব্যবহার করুন অথবা Admin-এর কাছে email যাচাই করুন।";
+  if (lower.includes("email not confirmed")) return "ইমেইলে পাঠানো confirmation link চাপুন, তারপর লগইন করুন।";
+  if (lower.includes("row-level security") || lower.includes("permission denied")) return "এই তথ্য সংরক্ষণের অনুমতি Supabase-এ blocked হয়েছে। Admin policy যাচাই করুন।";
+  if (lower.includes("duplicate key") || lower.includes("unique constraint")) return "এই email বা সদস্য ID আগে থেকেই ব্যবহৃত হয়েছে। অন্যটি দিন।";
+  return message || "অনুরোধটি সম্পন্ন করা যায়নি";
+}
+
 const countryOptions = getCountries().map((code) => {
   const localeNames = new Intl.DisplayNames(["bn", "en"], { type: "region" });
   return { code, name: localeNames.of(code) ?? code, dialCode: `+${getCountryCallingCode(code)}` };
@@ -67,7 +77,7 @@ export default function MemberAuthDialog() {
         setMessage("সাইনআপ সফল হয়েছে; ইমেইল যাচাই করে প্রবেশ করুন");
       }
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "অনুরোধটি সম্পন্ন করা যায়নি");
+      setMessage(readableAuthError(error));
     } finally {
       setBusy(false);
     }

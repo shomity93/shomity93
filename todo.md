@@ -169,3 +169,7 @@
 - [x] Audit every Admin Panel and হিসাব ব্যবস্থাপনা button for visible Bengali labels and sufficient contrast
 - [x] Repair any button text, variant, disabled-state, or inherited-color issue found in Admin/accounting controls
 - [x] Verify button labels visually in desktop and mobile screenshots before deployment
+- [x] Repair mobile member signup failure shown as “অনুরোধটি সম্পন্ন করা যায়নি”
+- [ ] Verify approved invite, Auth user, cooperative member profile, and member sheet creation for a new member without fabricated data
+- [x] Ensure the signup submit button label is visible and the error message exposes the real Bengali cause
+- [ ] Document the exact Admin-approved member-add procedure after the repair

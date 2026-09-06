@@ -10,7 +10,7 @@ export const isSupabaseConfigured = Boolean(supabase);
 export async function findApprovedMember(email: string) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
   const normalizedEmail = email.trim().toLowerCase();
-  const { data: invite, error: inviteError } = await supabase.from("member_invites").select("id, email, member_id, full_name, phone, country, country_code, national_id, passport_number, status").eq("email", normalizedEmail).eq("status", "approved").maybeSingle();
+  const { data: invite, error: inviteError } = await supabase.from("member_invites").select("id, email, member_id, full_name, phone, country, country_code, national_id, passport_number, status").eq("email", normalizedEmail).maybeSingle();
   if (inviteError) throw inviteError;
   if (invite) return invite;
   const { data: profile, error: profileError } = await supabase.from("cooperative_members").select("id, email, member_id, full_name, phone, country, country_code, national_id, passport_number, status, role").eq("email", normalizedEmail).eq("status", "approved").maybeSingle();
@@ -26,21 +26,32 @@ export async function requestMemberApproval(input: { email: string; fullName: st
   return data;
 }
 
+async function syncApprovedMemberProfile(input: { email: string; fullName: string; phone: string; memberId: string; country?: string; countryCode?: string; nationalId?: string; passportNumber?: string; photoUrl?: string | null }, userId: string) {
+  if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
+  const email = input.email.trim().toLowerCase();
+  const { data: existing, error: existingError } = await supabase.from("cooperative_members").select("id, role, status").eq("email", email).maybeSingle();
+  if (existingError) throw existingError;
+  const profilePayload = { auth_user_id: userId, member_id: input.memberId.trim(), full_name: input.fullName.trim(), email, phone: input.phone.trim(), country: input.country?.trim() || null, country_code: input.countryCode?.trim() || null, national_id: input.nationalId?.trim() || null, passport_number: input.passportNumber?.trim() || null, photo_url: input.photoUrl ?? null };
+  const query = existing ? supabase.from("cooperative_members").update(profilePayload).eq("id", existing.id).select("id").single() : supabase.from("cooperative_members").insert({ ...profilePayload, role: "member", status: "approved" }).select("id").single();
+  const { data: profile, error: profileError } = await query;
+  if (profileError) throw profileError;
+  const { error: sheetError } = await supabase.from("member_sheets").upsert({ member_id: profile.id }, { onConflict: "member_id" });
+  if (sheetError && sheetError.code !== "42P01") throw sheetError;
+  return profile;
+}
+
 export async function signUpApprovedMember(input: { email: string; password: string; fullName: string; phone: string; memberId: string; country?: string; countryCode?: string; nationalId?: string; passportNumber?: string; photoFile?: File }) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
   const approved = await findApprovedMember(input.email);
   if (!approved) { await requestMemberApproval(input); throw new Error("সাইনআপের অনুরোধ পাঠানো হয়েছে। এডমিন অনুমোদনের পর আবার সাইনআপ করুন"); }
-  if (approved.member_id !== input.memberId) throw new Error("সদস্য আইডি মিলছে না");
+  if (approved.status === "suspended") throw new Error("এই সদস্যপদ স্থগিত আছে। Admin Panel থেকে সদস্যকে অনুমোদন করতে হবে");
+  if (approved.status !== "approved") throw new Error("এই email-এর অনুমোদন এখনো সম্পন্ন হয়নি। Admin Panel থেকে আগে অনুমোদন নিন");
+  if (approved.member_id.trim().toLowerCase() !== input.memberId.trim().toLowerCase()) throw new Error("সদস্য আইডি মিলছে না");
   let photoUrl: string | null = null;
   if (input.photoFile) photoUrl = await uploadMemberPhoto(input.photoFile, input.memberId);
   const { data, error } = await supabase.auth.signUp({ email: input.email.trim().toLowerCase(), password: input.password, options: { data: { full_name: input.fullName, phone: input.phone, member_id: input.memberId, country: input.country ?? null, country_code: input.countryCode ?? null, national_id: input.nationalId ?? null, passport_number: input.passportNumber ?? null, photo_url: photoUrl, role: "member" } } });
   if (error) throw error;
-  if (data.user) {
-    const { data: profile, error: profileError } = await supabase.from("cooperative_members").upsert({ auth_user_id: data.user.id, member_id: input.memberId, full_name: input.fullName, email: input.email.trim().toLowerCase(), phone: input.phone, country: input.country ?? null, country_code: input.countryCode ?? null, national_id: input.nationalId ?? null, passport_number: input.passportNumber ?? null, photo_url: photoUrl, role: "member", status: "approved" }, { onConflict: "member_id" }).select("id").single();
-    if (profileError) throw profileError;
-    const { error: sheetError } = await supabase.from("member_sheets").upsert({ member_id: profile.id }, { onConflict: "member_id" });
-    if (sheetError && sheetError.code !== "42P01") throw sheetError;
-  }
+  if (data.user && data.session) await syncApprovedMemberProfile({ ...input, photoUrl }, data.user.id);
   if (data.session) window.dispatchEvent(new Event("supabase-session-changed"));
   return data;
 }
@@ -49,8 +60,12 @@ export async function signInMember(email: string, password: string) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
   const approved = await findApprovedMember(email);
   if (!approved) throw new Error("আপনার ইমেইলটি এডমিন অনুমোদিত তালিকায় নেই");
+  if (approved.status === "suspended") throw new Error("এই সদস্যপদ স্থগিত আছে। Admin-এর সঙ্গে যোগাযোগ করুন");
+  if (approved.status !== "approved") throw new Error("আপনার সদস্যপদ এখনো Admin অনুমোদন করেননি");
   const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
   if (error) throw error;
+  const metadata = data.user.user_metadata ?? {};
+  await syncApprovedMemberProfile({ email, fullName: String(metadata.full_name ?? approved.full_name), phone: String(metadata.phone ?? approved.phone ?? ""), memberId: String(metadata.member_id ?? approved.member_id), country: String(metadata.country ?? approved.country ?? ""), countryCode: String(metadata.country_code ?? approved.country_code ?? ""), nationalId: String(metadata.national_id ?? approved.national_id ?? ""), passportNumber: String(metadata.passport_number ?? approved.passport_number ?? ""), photoUrl: typeof metadata.photo_url === "string" ? metadata.photo_url : null }, data.user.id);
   window.dispatchEvent(new Event("supabase-session-changed"));
   return data;
 }
