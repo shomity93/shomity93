@@ -42,7 +42,7 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
 .member-detail-body { padding:26px 27px 30px; text-align:left; }
 .member-detail-body p { margin:10px 0; color:#536b74; line-height:1.8; }
 .member-detail-avatar { width:104px; height:104px; margin:0 auto 20px; border-radius:50%; display:grid; place-items:center; overflow:hidden; background:#e8f2ec; color:var(--green); font-size:24px; font-weight:800; }
-.member-detail-avatar img { width:100%; height:100%; object-fit:cover; }
+.member-detail-avatar img { width:100%; height:100%; object-fit:cover; object-position:center center; display:block; }
 @media(max-width:650px){.member-detail-card,.cms-panel{max-height:calc(100vh - 24px);}.member-detail-body{padding:20px;}.nav-actions{gap:7px}.nav-actions .user-chip{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.nav-actions .text-sm{font-size:11px;}}
 
 .hero-swipe { animation: hero-swipe-in 520ms cubic-bezier(.23,1,.32,1); }

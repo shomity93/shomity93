@@ -162,3 +162,7 @@
 - [x] Explain and repair gallery image title showing as a numeric value instead of editable Bengali text
 - [x] Re-audit the newest gallery, CMS, member visibility, accounting, member-sheet, and deployment changes together
 - [ ] Verify the new gallery text-entry flow after the next published deployment
+- [x] Repair accounting form visibility after Admin authentication
+- [x] Preserve all accounting fields when a receipt is selected
+- [ ] Verify and repair member transaction persistence through the live save path
+- [x] Center member profile photos in every member-card and profile surface
