@@ -218,3 +218,26 @@
 - [ ] Verify dashboard totals, monthly/annual reports, and member reports against real production rows
 - [ ] Verify mobile header, auth dialog, accounting tables, and print/PDF controls across breakpoints
 - [ ] Verify latest GitHub commit is deployed to Netlify and repeat live authenticated checks
+
+# New Request — 16 Member Approvals and One Consolidated GitHub Push
+- [ ] Inventory pending member invites and identify the exact 16 records requested for approval
+- [ ] Approve only the verified 16 pending member records in production and verify their statuses
+- [ ] Complete the PDF-driven code repairs in the working tree and run the full validation suite
+- [ ] Push the complete code state as one consolidated GitHub commit
+- [ ] Verify the approved-member count, member-sheet linkage, and deployment state after the consolidated push
+
+- [x] Audit and repair the hero slider when gallery has one or multiple visible records, including autoplay, right-to-left transition, indicators, controls, and refresh persistence
+
+# New Request — Pre-approved 16-member self-profile onboarding
+- [x] Confirm the intended allocation by production audit and reserve the next conflict-free sequence S-004 through S-019
+- [x] Define a non-fabricated pre-approved invite state that does not require invented name, email, or phone data
+- [ ] Allow an approved member ID holder to set password, email, profile information, and photo securely
+- [ ] Auto-create or synchronize the approved member profile and member sheet after self-profile completion
+- [ ] Validate the 16-member onboarding flow and include it in one consolidated GitHub commit
+
+# New Request — Accounting sidebar and conflict-free member IDs
+- [x] Audit existing cooperative member IDs and invite IDs before allocating new IDs
+- [x] Allocate 16 conflict-free pre-approved member IDs without inventing personal profile data
+- [x] Add a desktop accounting sidebar with dashboard, ledgers, member sheets, reports, Admin Panel, and sign out
+- [x] Add a responsive mobile sidebar drawer with non-overlapping controls
+- [ ] Re-test sidebar navigation, sign out, auth, member onboarding, slider, accounting, CMS, and PDF/print flows

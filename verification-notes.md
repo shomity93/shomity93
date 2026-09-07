@@ -29,3 +29,7 @@ The print callback now waits for two animation frames after mounting the selecte
 The attached PDF was reinterpreted as a complete issue checklist. Production schema audit confirms the expected onboarding, CMS, and accounting tables are present with RLS enabled. Live evidence shows two canonical ৳৫,০০০ deposit rows, one matching direct member deposit row that must not be counted again, two expenses totaling ৳৩,০০০, and no live receipt/voucher URLs; no financial rows were changed.
 
 The local repair pass now surfaces Admin approval-list failures, homepage/CMS loading failures, gallery reorder failures, and authentication permission/object errors in Bengali instead of silently swallowing them. Authentication error normalization is shared and covered by three new tests. The mobile homepage and protected `/hisab` entry remain visually stable. The full suite now passes 18 tests, typecheck passes, and the production build passes.
+
+## Pre-approved member ID allocation
+
+Production ID audit found existing `ADMIN-001`, `S-002`, `s-003`, and the long numeric Jahangir Alam ID. Because `member_invites` requires name, email, and phone, ID-only rows were not inserted into that table. Instead, an idempotent `member_id_reservations` table and RPC path were applied to production, reserving exactly `S-004` through `S-019` with status `reserved`, no fabricated profile data, and no collisions. Members can claim an ID by completing their own approved profile and authentication data.

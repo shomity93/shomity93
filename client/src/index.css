@@ -208,3 +208,26 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
   .print-output-root p { color: #000 !important; }
   .print-output-root a { color: #000 !important; text-decoration: none !important; }
 }
+
+/* Protected accounting navigation: persistent desktop sidebar and mobile drawer. */
+.accounting-app-shell { min-width: 0; }
+.accounting-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 40; display: flex; width: 236px; flex-direction: column; border-right: 1px solid #dbe4e1; background: #092337; color: #fff; box-shadow: 8px 0 24px rgba(9,35,55,.08); }
+.accounting-sidebar-title { display: flex; align-items: center; gap: .65rem; min-height: 72px; padding: 1rem 1.15rem; border-bottom: 1px solid rgba(255,255,255,.12); color: #f0c36a; font-weight: 800; }
+.accounting-sidebar-close { margin-left: auto; border: 0; background: transparent; color: #fff; }
+.accounting-sidebar-nav { display: grid; gap: .35rem; padding: 1rem .75rem; }
+.accounting-sidebar-link { display: flex; align-items: center; gap: .7rem; min-height: 42px; width: 100%; border: 1px solid transparent; border-radius: .65rem; padding: .65rem .75rem; background: transparent; color: #d9e7e6; text-align: left; font-size: .9rem; font-weight: 700; cursor: pointer; transition: background-color .18s ease, color .18s ease, transform .18s ease; }
+.accounting-sidebar-link:hover, .accounting-sidebar-link:focus-visible { background: rgba(240,195,106,.15); color: #fff; outline: none; }
+.accounting-sidebar-link:active { transform: scale(.98); }
+.accounting-sidebar-link.is-active { background: #f0c36a; color: #092337; }
+.accounting-sidebar-footer { display: grid; gap: .8rem; margin-top: auto; padding: 1rem .75rem 1.25rem; border-top: 1px solid rgba(255,255,255,.12); }
+.accounting-role-label { color: #bed0cd; font-size: .75rem; font-weight: 700; }
+.accounting-sidebar-signout { display: flex; align-items: center; justify-content: center; gap: .5rem; min-height: 40px; border: 1px solid rgba(255,255,255,.35); border-radius: .6rem; background: transparent; color: #fff; font-weight: 800; cursor: pointer; }
+.accounting-sidebar-signout:hover, .accounting-sidebar-signout:focus-visible { border-color: #f0c36a; background: rgba(240,195,106,.15); outline: none; }
+.accounting-sidebar-backdrop { display: none; }
+@media (min-width: 768px) { .accounting-app-shell { margin-left: 236px; } }
+@media (max-width: 767px) {
+  .accounting-sidebar { width: min(86vw, 320px); transform: translateX(-105%); transition: transform .22s cubic-bezier(.23,1,.32,1); }
+  .accounting-sidebar.is-open { transform: translateX(0); }
+  .accounting-sidebar-backdrop.is-open { position: fixed; inset: 0; z-index: 30; display: block; background: rgba(9,35,55,.48); }
+  .accounting-app-shell { margin-left: 0; }
+}

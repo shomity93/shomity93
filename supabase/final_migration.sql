@@ -226,3 +226,61 @@ begin
 end;
 $$;
 grant execute on function public.sync_member_photo(text) to authenticated;
+
+-- Pre-approved member IDs: reserve IDs without fabricating personal data.
+create table if not exists public.member_id_reservations (
+  member_id text primary key,
+  status text not null default 'reserved' check (status in ('reserved', 'claimed', 'disabled')),
+  claimed_email text,
+  claimed_at timestamptz,
+  created_at timestamptz not null default now()
+);
+create unique index if not exists member_id_reservations_lower_id_idx on public.member_id_reservations (lower(member_id));
+alter table public.member_id_reservations enable row level security;
+drop policy if exists "admins manage member id reservations" on public.member_id_reservations;
+create policy "admins manage member id reservations"
+  on public.member_id_reservations for all to authenticated
+  using (public.is_coop_admin()) with check (public.is_coop_admin());
+
+-- The next available IDs were checked against production records: ADMIN-001, S-002/s-003, and the long numeric ID already exist.
+insert into public.member_id_reservations (member_id)
+select format('S-%s', lpad(value::text, 3, '0'))
+from generate_series(4, 19) as value
+on conflict (member_id) do nothing;
+
+-- Approved reservations let a member submit their own profile and password without a fabricated Admin invite identity.
+create or replace function public.request_member_approval(
+  p_email text, p_member_id text, p_full_name text, p_phone text,
+  p_country text default null, p_country_code text default null,
+  p_national_id text default null, p_passport_number text default null
+) returns public.member_invites language plpgsql security definer set search_path = public as $$
+declare existing public.member_invites; reservation public.member_id_reservations;
+begin
+  if nullif(trim(p_email), '') is null or nullif(trim(p_member_id), '') is null or nullif(trim(p_full_name), '') is null or nullif(trim(p_phone), '') is null then
+    raise exception 'ইমেইল, সদস্য আইডি, নাম ও মোবাইল নম্বর প্রয়োজন';
+  end if;
+  select * into reservation from public.member_id_reservations
+    where lower(member_id) = lower(trim(p_member_id)) and status = 'reserved' limit 1;
+  if reservation.member_id is not null then
+    select * into existing from public.member_invites where lower(email) = lower(trim(p_email)) limit 1;
+    if existing.id is not null and existing.status in ('approved', 'suspended') then return existing; end if;
+    if existing.id is not null then
+      update public.member_invites set member_id = trim(p_member_id), full_name = trim(p_full_name), phone = trim(p_phone), country = nullif(trim(coalesce(p_country, '')), ''), country_code = nullif(trim(coalesce(p_country_code, '')), ''), national_id = nullif(trim(coalesce(p_national_id, '')), ''), passport_number = nullif(trim(coalesce(p_passport_number, '')), ''), status = 'approved', approved_at = now() where id = existing.id returning * into existing;
+    else
+      insert into public.member_invites (email, member_id, full_name, phone, country, country_code, national_id, passport_number, status, approved_at)
+      values (lower(trim(p_email)), trim(p_member_id), trim(p_full_name), trim(p_phone), nullif(trim(coalesce(p_country, '')), ''), nullif(trim(coalesce(p_country_code, '')), ''), nullif(trim(coalesce(p_national_id, '')), ''), nullif(trim(coalesce(p_passport_number, '')), ''), 'approved', now()) returning * into existing;
+    end if;
+    update public.member_id_reservations set status = 'claimed', claimed_email = lower(trim(p_email)), claimed_at = now() where member_id = reservation.member_id;
+    return existing;
+  end if;
+  select * into existing from public.member_invites where lower(email) = lower(trim(p_email)) limit 1;
+  if existing.id is not null then
+    if existing.status in ('approved', 'suspended') then return existing; end if;
+    update public.member_invites set member_id = trim(p_member_id), full_name = trim(p_full_name), phone = trim(p_phone), country = nullif(trim(coalesce(p_country, '')), ''), country_code = nullif(trim(coalesce(p_country_code, '')), ''), national_id = nullif(trim(coalesce(p_national_id, '')), ''), passport_number = nullif(trim(coalesce(p_passport_number, '')), ''), status = 'pending' where id = existing.id returning * into existing;
+    return existing;
+  end if;
+  insert into public.member_invites (email, member_id, full_name, phone, country, country_code, national_id, passport_number, status)
+  values (lower(trim(p_email)), trim(p_member_id), trim(p_full_name), trim(p_phone), nullif(trim(coalesce(p_country, '')), ''), nullif(trim(coalesce(p_country_code, '')), ''), nullif(trim(coalesce(p_national_id, '')), ''), nullif(trim(coalesce(p_passport_number, '')), ''), 'pending') returning * into existing;
+  return existing;
+end; $$;
+grant execute on function public.request_member_approval(text, text, text, text, text, text, text, text) to anon, authenticated;
