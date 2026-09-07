@@ -19,3 +19,7 @@ Accounting print mode now mounts only the selected target: deposit ledger, expen
 ## Validation
 
 TypeScript validation passed, all 15 Vitest tests passed, and the production build passed. Desktop and mobile local screenshots show the public homepage and protected `/hisab` entry remain intact. The live Netlify bundle still requires owner-side redeployment separately; this checkpoint does not claim live PDF round-trip verification.
+
+## Final print timing hardening
+
+The print callback now waits for two animation frames after mounting the selected print surface before calling `window.print()`. This prevents slower mobile browsers from opening the dialog before the report DOM is painted. TypeScript, all 15 Vitest tests, and the production build passed again after this change.
