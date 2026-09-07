@@ -223,7 +223,7 @@
 - [ ] Inventory pending member invites and identify the exact 16 records requested for approval
 - [ ] Approve only the verified 16 pending member records in production and verify their statuses
 - [ ] Complete the PDF-driven code repairs in the working tree and run the full validation suite
-- [ ] Push the complete code state as one consolidated GitHub commit
+- [x] Push the complete code state as one consolidated GitHub commit
 - [ ] Verify the approved-member count, member-sheet linkage, and deployment state after the consolidated push
 
 - [x] Audit and repair the hero slider when gallery has one or multiple visible records, including autoplay, right-to-left transition, indicators, controls, and refresh persistence

@@ -33,3 +33,7 @@ The local repair pass now surfaces Admin approval-list failures, homepage/CMS lo
 ## Pre-approved member ID allocation
 
 Production ID audit found existing `ADMIN-001`, `S-002`, `s-003`, and the long numeric Jahangir Alam ID. Because `member_invites` requires name, email, and phone, ID-only rows were not inserted into that table. Instead, an idempotent `member_id_reservations` table and RPC path were applied to production, reserving exactly `S-004` through `S-019` with status `reserved`, no fabricated profile data, and no collisions. Members can claim an ID by completing their own approved profile and authentication data.
+
+## Reserved-ID Admin visibility
+
+The Admin approval panel now reads the protected reservation table and displays reserved, claimed, and disabled IDs without exposing unclaimed personal data. The 16 reserved IDs are visible to Admins as S-004 through S-019. The updated Supabase helper and panel pass typecheck, all 18 Vitest tests, and the production build.

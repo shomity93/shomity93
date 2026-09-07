@@ -137,6 +137,15 @@ export async function listPendingInvites() {
   return data ?? [];
 }
 
+export type MemberIdReservation = { member_id: string; status: "reserved" | "claimed" | "disabled"; claimed_email?: string | null; claimed_at?: string | null };
+
+export async function listMemberIdReservations() {
+  if (!supabase) return [] as MemberIdReservation[];
+  const { data, error } = await supabase.from("member_id_reservations").select("member_id, status, claimed_email, claimed_at").order("member_id", { ascending: true }).limit(100);
+  if (error) throw error;
+  return (data ?? []) as MemberIdReservation[];
+}
+
 export async function createLedgerEntry(table: "deposits" | "expenses", values: Record<string, unknown>) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
   const { error } = await supabase.from(table).insert(values);
