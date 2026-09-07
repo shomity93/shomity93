@@ -23,3 +23,9 @@ TypeScript validation passed, all 15 Vitest tests passed, and the production bui
 ## Final print timing hardening
 
 The print callback now waits for two animation frames after mounting the selected print surface before calling `window.print()`. This prevents slower mobile browsers from opening the dialog before the report DOM is painted. TypeScript, all 15 Vitest tests, and the production build passed again after this change.
+
+## PDF master issue audit and local repair pass
+
+The attached PDF was reinterpreted as a complete issue checklist. Production schema audit confirms the expected onboarding, CMS, and accounting tables are present with RLS enabled. Live evidence shows two canonical ৳৫,০০০ deposit rows, one matching direct member deposit row that must not be counted again, two expenses totaling ৳৩,০০০, and no live receipt/voucher URLs; no financial rows were changed.
+
+The local repair pass now surfaces Admin approval-list failures, homepage/CMS loading failures, gallery reorder failures, and authentication permission/object errors in Bengali instead of silently swallowing them. Authentication error normalization is shared and covered by three new tests. The mobile homepage and protected `/hisab` entry remain visually stable. The full suite now passes 18 tests, typecheck passes, and the production build passes.
