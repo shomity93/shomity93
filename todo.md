@@ -205,3 +205,16 @@
 - [x] Review supplied DOC-20260907-WA0118.pdf three times for report content, print layout, and data accuracy
 - [x] Repair every PDF/print defect found in the supplied PDF review and verify all selected report types
 - [x] Re-run local tests, typecheck, production build, and local visual verification after the PDF repairs; published-flow verification remains deployment-dependent
+
+# PDF Master Issue Checklist — Full System Repair
+- [ ] Reconcile every PDF-reported issue against current code and live production behavior
+- [ ] Verify Admin login, member signup approval, and post-login redirect end-to-end
+- [ ] Verify member approval queue, member add flow, and member sheet creation
+- [ ] Verify receipt upload does not reset forms and supports preview/download/full-size viewing
+- [ ] Verify profile photos are centered and persist after refresh and across tabs
+- [ ] Verify gallery/logo/site-settings CMS saves persist in production
+- [ ] Verify accounting entry forms are visible, editable by role, and reliably saved
+- [ ] Verify canonical ledger-to-member-sheet linkage and no deposit double counting in all reports
+- [ ] Verify dashboard totals, monthly/annual reports, and member reports against real production rows
+- [ ] Verify mobile header, auth dialog, accounting tables, and print/PDF controls across breakpoints
+- [ ] Verify latest GitHub commit is deployed to Netlify and repeat live authenticated checks
