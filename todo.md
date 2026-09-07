@@ -134,7 +134,7 @@
 - [x] Add deterministic helper/test coverage for separate per-member report output
 - [x] Fix Admin email being classified as pending approval instead of approved Admin
 - [x] Verify the production Admin auth user, cooperative_members row, approved member_invites row, and RLS lookup path match by normalized email
-- [ ] Re-test the protected /hisab login flow after the Admin linkage fix and confirm the latest client bundle is deployed
+- [ ] Re-test the protected /hisab login flow after the Admin linkage fix and confirm the latest client bundle is deployed (login gate tested; latest bundle still stale)
 - [x] Directly verify the Supabase Auth user for shomity93@gmail.com and document its linkage to cooperative_members.auth_user_id
 - [x] Re-check approved invite/profile lookup end-to-end against production after the invite repair
 - [ ] Repair production Admin gallery image upload failure
@@ -148,7 +148,7 @@
 - [ ] Verify the live UI shows the detailed Bengali Supabase error or success state after deployment
 - [x] Re-audit production against the latest checkpoint and confirm whether Netlify is serving the current bundle
 - [x] Verify the live production asset/version marker and compare it with the latest repository commit
-- [ ] Re-verify live CMS/accounting behavior after resolving any deployment mismatch
+- [ ] Re-verify live CMS/accounting behavior after resolving any deployment mismatch (current Netlify bundle is stale; latest GitHub commit must be redeployed)
 - [x] Analyze uploaded 183458.mp4 frame by frame and document the exact accounting flow failures
 - [x] Re-verify whether the Admin has a visible member transaction form in the deployed build
 - [x] Verify how many approved members have cooperative member rows and linked transaction sheets
@@ -198,3 +198,10 @@
 - [x] Isolate selected monthly, annual, and member-sheet reports for print/PDF export without printing the full accounting screen
 - [ ] Verify receipt upload persistence and canonical deposit/member-sheet accounting together
 - [ ] Add regression coverage for receipt action rendering and report print isolation
+
+- [ ] Redeploy the latest GitHub commit to Netlify and verify the live bundle contains the canonical deposit filter and sync_member_photo changes
+- [ ] Re-verify live /hisab after redeploy, including Admin login, summary totals without deposit double counting, and updated signup/photo-sync behavior
+
+- [x] Review supplied DOC-20260907-WA0118.pdf three times for report content, print layout, and data accuracy
+- [x] Repair every PDF/print defect found in the supplied PDF review and verify all selected report types
+- [x] Re-run local tests, typecheck, production build, and local visual verification after the PDF repairs; published-flow verification remains deployment-dependent

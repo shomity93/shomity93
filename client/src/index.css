@@ -133,3 +133,78 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
 
 .print-output-root { display:none; }
 @media print { .print-selected-report .print-output-root { display:block !important; } }
+
+/* Final isolated report print surface. The selected root is mounted only during the print callback. */
+.print-output-root { display: none; }
+@media print {
+  @page { size: A4 portrait; margin: 12mm; }
+  html, body { width: 100%; min-height: 0; background: #fff !important; }
+  body * { visibility: hidden !important; }
+  .print-output-root,
+  .print-output-root * { visibility: visible !important; }
+  .print-output-root {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .print-output-root h1 {
+    display: block !important;
+    margin: 0 0 8mm !important;
+    padding: 0 !important;
+    color: #092337 !important;
+    font-family: 'Noto Sans Bengali', sans-serif !important;
+    font-size: 18pt !important;
+    line-height: 1.35 !important;
+    text-align: center !important;
+  }
+  .print-output-root .table-shell {
+    display: block !important;
+    width: 100% !important;
+    overflow: visible !important;
+    border: 1px solid #8b969a !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  .print-output-root .ledger-table {
+    display: table !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    font-size: 8.5pt !important;
+  }
+  .print-output-root .ledger-table thead { display: table-header-group !important; }
+  .print-output-root .ledger-table tr { break-inside: avoid !important; page-break-inside: avoid !important; }
+  .print-output-root .ledger-table th,
+  .print-output-root .ledger-table td {
+    padding: 5px 4px !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    border: 1px solid #b6bec0 !important;
+    color: #000 !important;
+    background: #fff !important;
+  }
+  .print-output-root .ledger-table th {
+    background: #eef2f1 !important;
+    color: #092337 !important;
+    font-weight: 800 !important;
+  }
+  .print-output-root .member-print-sheet {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin: 0 0 10mm !important;
+  }
+  .print-output-root .member-print-sheet h4 {
+    margin: 0 0 3mm !important;
+    color: #092337 !important;
+    font-size: 12pt !important;
+  }
+  .print-output-root p { color: #000 !important; }
+  .print-output-root a { color: #000 !important; text-decoration: none !important; }
+}
