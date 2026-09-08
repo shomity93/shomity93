@@ -181,8 +181,18 @@ export async function deleteLedgerEntry(table: "deposits" | "expenses", id: stri
 
 export async function createAdminInvite(input: { email: string; memberId: string; fullName: string; phone: string; country?: string; countryCode?: string; nationalId?: string; passportNumber?: string }) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
-  const { data, error } = await supabase.from("member_invites").upsert({ email: input.email.trim().toLowerCase(), member_id: input.memberId.trim(), full_name: input.fullName.trim(), phone: input.phone.trim(), country: input.country?.trim() || null, country_code: input.countryCode?.trim() || null, national_id: input.nationalId?.trim() || null, passport_number: input.passportNumber?.trim() || null, status: "approved" }, { onConflict: "email" }).select().single();
+  const email = input.email.trim().toLowerCase();
+  const memberId = input.memberId.trim();
+  const profile = { email, member_id: memberId, full_name: input.fullName.trim(), phone: input.phone.trim(), country: input.country?.trim() || null, country_code: input.countryCode?.trim() || null, national_id: input.nationalId?.trim() || null, passport_number: input.passportNumber?.trim() || null, status: "approved" as const };
+  const { data, error } = await supabase.from("member_invites").upsert(profile, { onConflict: "email" }).select().single();
   if (error) throw error;
+  const { data: existing, error: existingError } = await supabase.from("cooperative_members").select("id, auth_user_id").or(`email.eq.${email},member_id.eq.${memberId}`).maybeSingle();
+  if (existingError) throw existingError;
+  const memberPayload = { ...profile, role: "member" as const };
+  const memberResult = existing
+    ? await supabase.from("cooperative_members").update(memberPayload).eq("id", existing.id)
+    : await supabase.from("cooperative_members").insert(memberPayload);
+  if (memberResult.error) throw memberResult.error;
   return data;
 }
 

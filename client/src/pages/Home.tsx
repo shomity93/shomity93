@@ -26,7 +26,7 @@ export default function Home() {
   const { user, isAuthenticated } = useAuth();
   useEffect(() => {
     if (isAuthenticated && window.location.hash.includes("access_token")) {
-      const recovery = window.location.hash.includes("type=recovery");
+      const recovery = /type=(recovery|invite|signup)/.test(window.location.hash);
       window.history.replaceState({}, document.title, window.location.pathname);
       window.location.assign(recovery ? "/reset-password" : "/hisab");
     }
