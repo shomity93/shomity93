@@ -21,7 +21,7 @@ describe("member-wise dashboard aggregation", () => {
     expect(validateCooperativeUpload({ name: "logo.webp", type: "image/webp", size: 30_000 })).toBe(true);
     expect(validateCooperativeUpload({ name: "receipt.pdf", type: "application/pdf", size: 40_000 })).toBe(true);
     expect(validateCooperativeUpload({ name: "script.exe", type: "application/octet-stream", size: 10_000 })).toBe(false);
-    expect(validateCooperativeUpload({ name: "large.jpg", type: "image/jpeg", size: 11 * 1024 * 1024 })).toBe(false);
+    expect(validateCooperativeUpload({ name: "large.jpg", type: "image/jpeg", size: 51 * 1024 * 1024 })).toBe(false);
   });
 });
 

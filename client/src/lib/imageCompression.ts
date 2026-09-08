@@ -2,7 +2,7 @@ import imageCompression from "browser-image-compression";
 
 export async function compressUpload(file: File, folder: "gallery" | "members" | "receipts" | "vouchers" | "branding" | "presentation") {
   const compressed = await imageCompression(file, {
-    maxSizeMB: folder === "gallery" || folder === "presentation" ? 0.8 : folder === "branding" ? 0.15 : 0.35,
+    maxSizeMB: folder === "gallery" || folder === "presentation" ? 0.8 : folder === "branding" ? 0.15 : folder === "receipts" || folder === "vouchers" ? 0.25 : 0.35,
     maxWidthOrHeight: folder === "gallery" || folder === "presentation" ? 1800 : folder === "branding" ? 900 : 1200,
     useWebWorker: true,
     fileType: file.type || "image/jpeg",

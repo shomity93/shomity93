@@ -5,11 +5,11 @@ export type UploadFolder = "gallery" | "members" | "receipts" | "vouchers" | "br
 
 export function validateCooperativeUpload(file: Pick<File, "name" | "size" | "type">) {
   const supported = file.type.startsWith("image/") || file.type === "application/pdf";
-  return supported && file.size > 0 && file.size <= 10 * 1024 * 1024 && file.name.trim().length > 0;
+  return supported && file.size > 0 && file.size <= 50 * 1024 * 1024 && file.name.trim().length > 0;
 }
 
 export async function uploadCooperativeFile(file: File, folder: UploadFolder) {
-  if (!validateCooperativeUpload(file)) throw new Error("শুধু ছবি বা PDF ফাইল (সর্বোচ্চ ১০ MB) আপলোড করা যাবে");
+  if (!validateCooperativeUpload(file)) throw new Error("শুধু ছবি বা PDF ফাইল (সর্বোচ্চ ৫০ MB প্রতি ফাইল) আপলোড করা যাবে");
   const compressed = file.type.startsWith("image/") ? await compressUpload(file, folder) : file;
   const safeName = compressed.name.replace(/[^a-zA-Z0-9._-]/g, "-");
   const path = `${folder}/${Date.now()}-${safeName}`;
