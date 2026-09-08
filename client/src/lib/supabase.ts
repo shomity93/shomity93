@@ -122,9 +122,18 @@ export async function getCurrentMember() {
   if (!supabase) return null;
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) return null;
-  const { data, error } = await supabase.from("cooperative_members").select("id, auth_user_id, member_id, full_name, email, phone, country, country_code, national_id, passport_number, photo_url, role, status").eq("auth_user_id", authData.user.id).maybeSingle();
+  const { data, error } = await supabase.from("cooperative_members").select("id, auth_user_id, member_id, full_name, email, phone, address, country, country_code, national_id, passport_number, photo_url, role, status").eq("auth_user_id", authData.user.id).maybeSingle();
   if (error) throw error;
   return data;
+}
+
+export async function updateMyMemberProfile(input: { fullName: string; phone: string; address: string; photoFile?: File | null; currentPhotoUrl?: string | null }) {
+  if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
+  let photoUrl = input.currentPhotoUrl ?? null;
+  if (input.photoFile) photoUrl = await uploadMemberPhoto(input.photoFile, "profile");
+  const { error } = await supabase.rpc("update_my_member_profile", { p_full_name: input.fullName, p_phone: input.phone, p_address: input.address, p_photo_url: photoUrl });
+  if (error) throw error;
+  return photoUrl;
 }
 
 export async function listDeposits() {
