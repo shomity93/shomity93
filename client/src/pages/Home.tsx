@@ -24,6 +24,12 @@ const heroImages = [
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
+  useEffect(() => {
+    if (isAuthenticated && window.location.hash.includes("access_token")) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      window.location.assign("/hisab");
+    }
+  }, [isAuthenticated]);
   const [slide, setSlide] = useState(0);
   const [active, setActive] = useState("home");
   const [mobileNav, setMobileNav] = useState(false);

@@ -46,8 +46,9 @@ export async function signUpApprovedMember(input: { email: string; password: str
   if (approved.status === "suspended") throw new Error("এই সদস্যপদ স্থগিত আছে। Admin Panel থেকে সদস্যকে অনুমোদন করতে হবে");
   if (approved.status !== "approved") throw new Error("এই email-এর অনুমোদন এখনো সম্পন্ন হয়নি। Admin Panel থেকে আগে অনুমোদন নিন");
   if (approved.member_id.trim().toLowerCase() !== input.memberId.trim().toLowerCase()) throw new Error("সদস্য আইডি মিলছে না");
-  const { data, error } = await supabase.auth.signUp({ email: input.email.trim().toLowerCase(), password: input.password, options: { data: { full_name: input.fullName, phone: input.phone, member_id: input.memberId, country: input.country ?? null, country_code: input.countryCode ?? null, national_id: input.nationalId ?? null, passport_number: input.passportNumber ?? null, photo_url: null, role: "member" } } });
+  const { data, error } = await supabase.auth.signUp({ email: input.email.trim().toLowerCase(), password: input.password, options: { emailRedirectTo: `${window.location.origin}/hisab`, data: { full_name: input.fullName, phone: input.phone, member_id: input.memberId, country: input.country ?? null, country_code: input.countryCode ?? null, national_id: input.nationalId ?? null, passport_number: input.passportNumber ?? null, photo_url: null, role: "member" } } });
   if (error) throw error;
+  if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) throw new Error("এই ইমেইলে account আগে থেকেই আছে। ইমেইল যাচাই করে লগইন করুন বা password reset করুন");
   if (data.user && data.session) {
     await syncApprovedMemberProfile({ ...input, photoUrl: null }, data.user.id);
     if (input.photoFile) {

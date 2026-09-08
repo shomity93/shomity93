@@ -36,6 +36,7 @@ export default function LedgerForm({ type, members, initial, onSubmit, onCancel 
     if (!values.occurred_on) return setError("তারিখ নির্বাচন করুন");
     if (type === "deposit" && (!values.transaction_id || !values.member_id)) return setError("লেনদেন আইডি ও সদস্য নির্বাচন করুন");
     if (type === "expense" && (!values.voucher_no || !values.description)) return setError("ভাউচার নম্বর ও খরচের বিবরণ দিন");
+    if (!values.file_url) return setError(type === "deposit" ? "রসিদ আপলোড করা বাধ্যতামূলক" : "বিল/ভাউচার ফাইল আপলোড করা বাধ্যতামূলক");
     setBusy(true);
     setError("");
     try {
