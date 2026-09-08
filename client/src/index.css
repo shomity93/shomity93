@@ -115,6 +115,9 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
 .attachment-viewer-body img { display:block; max-width:100%; max-height:calc(100vh - 220px); object-fit:contain; }
 .attachment-viewer-body iframe { width:100%; min-height:clamp(420px, 70vh, 760px); border:0; background:#fff; }
 .print-only-ledger, .print-output-report { display:none; }
+.print-report-header { display:grid; gap:2px; margin-bottom:6mm; text-align:center; color:#092337; }
+.print-report-header strong { font-size:16pt; }
+.print-report-header span { font-size:10pt; }
 @media (max-width:650px) { .attachment-viewer { max-height:calc(100vh - 24px); padding:10px; } .attachment-viewer-body { max-height:calc(100vh - 150px); } .attachment-viewer-actions > * { flex:1 1 auto; justify-content:center; } }
 @media print {
   body { background:#fff !important; }
