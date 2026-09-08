@@ -41,8 +41,13 @@ async function syncMemberPhoto(photoUrl: string) {
 
 export async function signUpApprovedMember(input: { email: string; password: string; fullName: string; phone: string; memberId: string; country?: string; countryCode?: string; nationalId?: string; passportNumber?: string; photoFile?: File }) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
-  const approved = await findApprovedMember(input.email);
-  if (!approved) { await requestMemberApproval(input); throw new Error("সাইনআপের অনুরোধ পাঠানো হয়েছে। এডমিন অনুমোদনের পর আবার সাইনআপ করুন"); }
+  let approved = await findApprovedMember(input.email);
+  if (!approved) {
+    const reservedOrPending = await requestMemberApproval(input);
+    if (!reservedOrPending || reservedOrPending.status !== "approved") throw new Error("সাইনআপের অনুরোধ পাঠানো হয়েছে। এডমিন অনুমোদনের পর আবার সাইনআপ করুন");
+    approved = reservedOrPending;
+  }
+  if (!approved) throw new Error("সদস্য অনুমোদন তথ্য পাওয়া যায়নি");
   if (approved.status === "suspended") throw new Error("এই সদস্যপদ স্থগিত আছে। Admin Panel থেকে সদস্যকে অনুমোদন করতে হবে");
   if (approved.status !== "approved") throw new Error("এই email-এর অনুমোদন এখনো সম্পন্ন হয়নি। Admin Panel থেকে আগে অনুমোদন নিন");
   if (approved.member_id.trim().toLowerCase() !== input.memberId.trim().toLowerCase()) throw new Error("সদস্য আইডি মিলছে না");

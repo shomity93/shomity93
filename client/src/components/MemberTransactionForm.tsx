@@ -72,8 +72,8 @@ export default function MemberTransactionForm({ members, initial, onSubmit, onCa
   };
 
   return (
-    <Dialog open onOpenChange={(open) => !open && !busy && onCancel()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto bg-white text-slate-900">
+    <Dialog open onOpenChange={() => undefined}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto bg-white text-slate-900" onPointerDownOutside={(event) => event.preventDefault()} onInteractOutside={(event) => event.preventDefault()} onEscapeKeyDown={(event) => event.preventDefault()}>
         <DialogHeader><DialogTitle>{initial ? "সদস্যের হিসাব সম্পাদনা" : "সদস্যের নতুন হিসাব"}</DialogTitle></DialogHeader>
         <form className="grid gap-4" onSubmit={submit}>
           <div><Label>সদস্য</Label><select className="h-10 w-full rounded-md border bg-white px-3 text-sm" value={values.member_id} onChange={(event) => set("member_id", event.target.value)} required><option value="">সদস্য নির্বাচন করুন</option>{members.map((member) => <option key={member.id} value={member.id}>{member.full_name} · {member.member_id}</option>)}</select></div>

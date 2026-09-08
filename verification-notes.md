@@ -37,3 +37,7 @@ Production ID audit found existing `ADMIN-001`, `S-002`, `s-003`, and the long n
 ## Reserved-ID Admin visibility
 
 The Admin approval panel now reads the protected reservation table and displays reserved, claimed, and disabled IDs without exposing unclaimed personal data. The 16 reserved IDs are visible to Admins as S-004 through S-019. The updated Supabase helper and panel pass typecheck, all 18 Vitest tests, and the production build.
+
+## Video-driven repair pass — 2026-09-08
+
+The screen recording was analyzed frame by frame. The homepage now has one auto-hide sidebar/drawer rather than a duplicated header link row. The accounting header no longer duplicates Home, entry, and sign-out controls that are available from the accounting sidebar. Ledger and member-transaction dialogs now require explicit Save or Cancel and block outside/escape dismissal, preserving staged receipt files and entered fields. Reserved-ID signup now attempts the approved-ID RPC path when an email has no existing invite, allowing S-004–S-019 self-profile completion. Hero slide rendering now clamps the active index and bounds progress/controls when live gallery length changes. TypeScript, 18 Vitest tests, production build, and desktop/mobile screenshots passed after these changes. A real receipt upload and authenticated self-profile round-trip still requires user-driven testing in the Manus preview.

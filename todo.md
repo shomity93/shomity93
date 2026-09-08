@@ -241,3 +241,13 @@
 - [x] Add a desktop accounting sidebar with dashboard, ledgers, member sheets, reports, Admin Panel, and sign out
 - [x] Add a responsive mobile sidebar drawer with non-overlapping controls
 - [ ] Re-test sidebar navigation, sign out, auth, member onboarding, slider, accounting, CMS, and PDF/print flows
+
+# Video Master Repair Pass — 2026-09-08
+- [x] Review Screen_Recording_20260908_051357.mp4 frame by frame and record each reproducible defect
+- [x] Make homepage navigation a single auto-hide sidebar/drawer without duplicating accounting/Admin header navigation
+- [x] Clarify and repair the member ID model so every pre-approved member has one stable signup ID and no ambiguous S-number versus numeric identity
+- [ ] Reconcile Jahangir Alam’s existing member_id, invite, profile, and signup mapping without overwriting real data
+- [ ] Pre-approve the intended member records with only verified identity data and let each member set password/profile securely
+- [x] Repair signup/login and post-login redirect implementation in the Manus preview; authenticated round-trip remains pending
+- [x] Repair receipt entry save/upload persistence implementation in the Manus preview; authenticated upload round-trip remains pending
+- [x] Re-test the slider against the video’s actual failure state, including live gallery loading and autoplay in local preview; live authenticated/gallery verification remains pending
