@@ -14,8 +14,10 @@ export async function uploadCooperativeFile(file: File, folder: UploadFolder) {
   const safeName = compressed.name.replace(/[^a-zA-Z0-9._-]/g, "-");
   const path = `${folder}/${Date.now()}-${safeName}`;
   if (!supabase) return { path, url: URL.createObjectURL(compressed), compressed };
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (!sessionData.session) throw new Error("সেশন পাওয়া যায়নি; আগে আবার লগইন করুন, তারপর receipt upload করুন");
   const { error } = await supabase.storage.from("cooperative-files").upload(path, compressed, { upsert: true, contentType: compressed.type || "application/octet-stream", cacheControl: "3600" });
-  if (error) throw error;
+  if (error) throw new Error(`Storage upload ব্যর্থ: ${error.message}`);
   const { data } = supabase.storage.from("cooperative-files").getPublicUrl(path);
   return { path, url: data.publicUrl, compressed };
 }
