@@ -74,6 +74,20 @@ export async function signInMember(email: string, password: string) {
   return data;
 }
 
+export async function requestMemberPasswordReset(email: string) {
+  if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
+  const approved = await findApprovedMember(email);
+  if (!approved || approved.status !== "approved") throw new Error("এই email অনুমোদিত সদস্য তালিকায় নেই");
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), { redirectTo: `${window.location.origin}/reset-password` });
+  if (error) throw error;
+}
+
+export async function updateMemberPassword(password: string) {
+  if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) throw error;
+}
+
 export async function signOutMember() {
   if (!supabase) return;
   const { error } = await supabase.auth.signOut();
