@@ -17,11 +17,21 @@ export default function LedgerForm({ type, members, initial, onSubmit, onCancel 
   const set = (key: string, value: string) => setValues((current) => ({ ...current, [key]: value }));
   const onFileSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selected = event.target.files?.[0];
-    event.currentTarget.value = "";
     if (!selected) return;
     setError("");
     setPendingFile(selected);
     setValues((current) => ({ ...current, file_name: selected.name, file_type: selected.type || "ফাইল", file_size: String(Math.max(1, Math.round(selected.size / 1024))) }));
+    setBusy(true);
+    try {
+      const uploaded = await uploadCooperativeFile(selected, type === "deposit" ? "receipts" : "vouchers");
+      setValues((current) => ({ ...current, file_url: uploaded.url, file_name: uploaded.compressed.name, file_type: uploaded.compressed.type || "ফাইল", file_size: String(Math.max(1, Math.round(uploaded.compressed.size / 1024))) }));
+      setPendingFile(null);
+      setError("");
+    } catch (err) {
+      setError(err instanceof Error ? `রসিদ আপলোড হয়নি: ${err.message}` : "রসিদ আপলোড হয়নি; আবার চেষ্টা করুন");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const submit = async (event: React.FormEvent) => {
