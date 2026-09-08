@@ -43,10 +43,11 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
 .member-detail-body p { margin:10px 0; color:#536b74; line-height:1.8; }
 .member-detail-avatar { width:104px; height:104px; margin:0 auto 20px; border-radius:50%; display:grid; place-items:center; overflow:hidden; background:#e8f2ec; color:var(--green); font-size:24px; font-weight:800; }
 .member-detail-avatar img { width:100%; height:100%; object-fit:cover; object-position:center center; display:block; }
+.member-avatar img, .member-card .member-avatar img { display:block; width:100%; height:100%; object-fit:cover; object-position:50% 50%; margin:0 auto; }
 @media(max-width:650px){.member-detail-card,.cms-panel{max-height:calc(100vh - 24px);}.member-detail-body{padding:20px;}.nav-actions{gap:7px}.nav-actions .user-chip{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.nav-actions .text-sm{font-size:11px;}}
 
 .hero-swipe { animation: hero-swipe-in 520ms cubic-bezier(.23,1,.32,1); }
-@keyframes hero-swipe-in { from { opacity: .35; transform: translateX(5%); } to { opacity: 1; transform: translateX(0); } }
+@keyframes hero-swipe-in { from { opacity: .35; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
 @media (prefers-reduced-motion: reduce) { .hero-swipe { animation: none; } }
 
 .member-auth-trigger { white-space: nowrap; }
@@ -155,6 +156,11 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
     background: #fff !important;
     color: #000 !important;
   }
+  .print-output-root .print-only-ledger,
+  .print-output-root .print-output-report { display: block !important; }
+  .print-output-root .print-report-header { display: grid !important; margin: 0 0 6mm !important; text-align: center !important; }
+  .print-output-root .print-report-header strong,
+  .print-output-root .print-report-header span { display: block !important; color: #092337 !important; }
   .print-output-root h1 {
     display: block !important;
     margin: 0 0 8mm !important;
@@ -214,7 +220,8 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
 
 /* Protected accounting navigation: persistent desktop sidebar and mobile drawer. */
 .accounting-app-shell { min-width: 0; }
-.accounting-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 40; display: flex; width: 236px; flex-direction: column; border-right: 1px solid #dbe4e1; background: #092337; color: #fff; box-shadow: 8px 0 24px rgba(9,35,55,.08); }
+.accounting-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 40; display: flex; width: 236px; flex-direction: column; border-right: 1px solid #dbe4e1; background: #092337; color: #fff; box-shadow: 8px 0 24px rgba(9,35,55,.08); transform: translateX(-105%); transition: transform .22s cubic-bezier(.23,1,.32,1); }
+.accounting-sidebar.is-open { transform: translateX(0); }
 .accounting-sidebar-title { display: flex; align-items: center; gap: .65rem; min-height: 72px; padding: 1rem 1.15rem; border-bottom: 1px solid rgba(255,255,255,.12); color: #f0c36a; font-weight: 800; }
 .accounting-sidebar-close { margin-left: auto; border: 0; background: transparent; color: #fff; }
 .accounting-sidebar-nav { display: grid; gap: .35rem; padding: 1rem .75rem; }
@@ -227,10 +234,9 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
 .accounting-sidebar-signout { display: flex; align-items: center; justify-content: center; gap: .5rem; min-height: 40px; border: 1px solid rgba(255,255,255,.35); border-radius: .6rem; background: transparent; color: #fff; font-weight: 800; cursor: pointer; }
 .accounting-sidebar-signout:hover, .accounting-sidebar-signout:focus-visible { border-color: #f0c36a; background: rgba(240,195,106,.15); outline: none; }
 .accounting-sidebar-backdrop { display: none; }
-@media (min-width: 768px) { .accounting-app-shell { margin-left: 236px; } }
+@media (min-width: 768px) { .accounting-app-shell { margin-left: 0; } }
 @media (max-width: 767px) {
-  .accounting-sidebar { width: min(86vw, 320px); transform: translateX(-105%); transition: transform .22s cubic-bezier(.23,1,.32,1); }
-  .accounting-sidebar.is-open { transform: translateX(0); }
+  .accounting-sidebar { width: min(86vw, 320px); }
   .accounting-sidebar-backdrop.is-open { position: fixed; inset: 0; z-index: 30; display: block; background: rgba(9,35,55,.48); }
   .accounting-app-shell { margin-left: 0; }
 }

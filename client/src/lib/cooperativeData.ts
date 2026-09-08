@@ -11,9 +11,10 @@ export function validateCooperativeUpload(file: Pick<File, "name" | "size" | "ty
 export async function uploadCooperativeFile(file: File, folder: UploadFolder) {
   if (!validateCooperativeUpload(file)) throw new Error("শুধু ছবি বা PDF ফাইল (সর্বোচ্চ ১০ MB) আপলোড করা যাবে");
   const compressed = file.type.startsWith("image/") ? await compressUpload(file, folder) : file;
-  const path = `${folder}/${Date.now()}-${compressed.name}`;
+  const safeName = compressed.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+  const path = `${folder}/${Date.now()}-${safeName}`;
   if (!supabase) return { path, url: URL.createObjectURL(compressed), compressed };
-  const { error } = await supabase.storage.from("cooperative-files").upload(path, compressed, { upsert: false, contentType: compressed.type });
+  const { error } = await supabase.storage.from("cooperative-files").upload(path, compressed, { upsert: true, contentType: compressed.type || "application/octet-stream", cacheControl: "3600" });
   if (error) throw error;
   const { data } = supabase.storage.from("cooperative-files").getPublicUrl(path);
   return { path, url: data.publicUrl, compressed };

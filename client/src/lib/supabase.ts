@@ -97,14 +97,14 @@ export async function getCurrentMember() {
 
 export async function listDeposits() {
   if (!supabase) return [];
-  const { data, error } = await supabase.from("deposits").select("id, transaction_id, occurred_on, category, amount, payment_method, receipt_url, receipt_name, receipt_type, receipt_size, member:cooperative_members(id, member_id, full_name), entered_by").order("occurred_on", { ascending: false });
+  const { data, error } = await supabase.from("deposits").select("id, transaction_id, occurred_on, category, amount, payment_method, receipt_url, receipt_name, receipt_type, receipt_size, member:cooperative_members(id, member_id, full_name), entered_by, entered_by_name").order("occurred_on", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
 
 export async function listExpenses() {
   if (!supabase) return [];
-  const { data, error } = await supabase.from("expenses").select("id, voucher_no, occurred_on, description, category, total_amount, voucher_url, voucher_name, voucher_type, voucher_size, entered_by").order("occurred_on", { ascending: false });
+  const { data, error } = await supabase.from("expenses").select("id, voucher_no, occurred_on, description, category, total_amount, voucher_url, voucher_name, voucher_type, voucher_size, entered_by, entered_by_name").order("occurred_on", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
@@ -272,12 +272,12 @@ export async function subscribeToPublicContentChanges(onChange: () => void) {
   return () => { void supabase.removeChannel(channel); };
 }
 
-export type MemberTransaction = { id: string; member_id: string; transaction_date: string; transaction_type: "deposit" | "withdrawal" | "fine" | "loan"; description: string; amount: number; payment_method: string; attachment_url?: string | null; attachment_name?: string | null; attachment_type?: string | null; attachment_size?: number | null; entered_by?: string | null; member?: { id: string; member_id: string; full_name: string } | Array<{ id: string; member_id: string; full_name: string }> | null };
+export type MemberTransaction = { id: string; member_id: string; transaction_date: string; transaction_type: "deposit" | "withdrawal" | "fine" | "loan"; description: string; amount: number; payment_method: string; attachment_url?: string | null; attachment_name?: string | null; attachment_type?: string | null; attachment_size?: number | null; entered_by?: string | null; entered_by_name?: string | null; member?: { id: string; member_id: string; full_name: string } | Array<{ id: string; member_id: string; full_name: string }> | null };
 
 export async function listMemberTransactions() {
   if (!supabase) return [] as MemberTransaction[];
   const [transactionResult, depositResult] = await Promise.all([
-    supabase.from("member_transactions").select("id, member_id, transaction_date, transaction_type, description, amount, payment_method, attachment_url, attachment_name, attachment_type, attachment_size, entered_by, member:cooperative_members(id, member_id, full_name)").order("transaction_date", { ascending: false }).order("created_at", { ascending: false }),
+    supabase.from("member_transactions").select("id, member_id, transaction_date, transaction_type, description, amount, payment_method, attachment_url, attachment_name, attachment_type, attachment_size, entered_by, entered_by_name, member:cooperative_members(id, member_id, full_name)").order("transaction_date", { ascending: false }).order("created_at", { ascending: false }),
     supabase.from("deposits").select("id, member_id, occurred_on, transaction_id, amount, payment_method, receipt_url, receipt_name, receipt_type, receipt_size, entered_by, member:cooperative_members(id, member_id, full_name)").order("occurred_on", { ascending: false }),
   ]);
   if (transactionResult.error && transactionResult.error.code !== "42P01" && !transactionResult.error.message.includes("member_transactions")) throw transactionResult.error;
@@ -302,7 +302,7 @@ export async function listMemberTransactions() {
   return [...depositRows, ...directRows].sort((a, b) => String(b.transaction_date).localeCompare(String(a.transaction_date)));
 }
 
-const memberTransactionFields = ["member_id", "transaction_date", "transaction_type", "description", "amount", "payment_method", "attachment_url", "attachment_name", "attachment_type", "attachment_size", "entered_by"] as const;
+const memberTransactionFields = ["member_id", "transaction_date", "transaction_type", "description", "amount", "payment_method", "attachment_url", "attachment_name", "attachment_type", "attachment_size", "entered_by", "entered_by_name"] as const;
 
 function normalizeMemberTransaction(values: Record<string, unknown>) {
   const payload: Record<string, unknown> = {};
