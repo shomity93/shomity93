@@ -25,12 +25,12 @@ const heroImages = [
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   useEffect(() => {
-    if (isAuthenticated && window.location.hash.includes("access_token")) {
-      const recovery = /type=(recovery|invite|signup)/.test(window.location.hash);
-      window.history.replaceState({}, document.title, window.location.pathname);
-      window.location.assign(recovery ? "/reset-password" : "/hisab");
-    }
-  }, [isAuthenticated]);
+    const hasSupabaseToken = window.location.hash.includes("access_token") || window.location.hash.includes("error_description") || new URLSearchParams(window.location.search).has("code");
+    if (!hasSupabaseToken) return;
+    const recovery = /type=(recovery|invite|signup)/.test(window.location.hash) || new URLSearchParams(window.location.search).get("type") === "recovery";
+    const token = `${window.location.search}${window.location.hash}`;
+    window.location.assign(`${recovery ? "/reset-password" : "/hisab"}${token}`);
+  }, []);
   const [slide, setSlide] = useState(0);
   const [active, setActive] = useState("home");
   const [mobileNav, setMobileNav] = useState(false);
