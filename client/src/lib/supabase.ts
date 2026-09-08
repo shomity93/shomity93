@@ -86,6 +86,23 @@ export async function updateMemberPassword(password: string) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
   const { error } = await supabase.auth.updateUser({ password });
   if (error) throw error;
+  const { data: authData } = await supabase.auth.getUser();
+  const email = authData.user?.email;
+  if (!email || !authData.user) throw new Error("Recovery session পাওয়া যায়নি; reset link আবার খুলুন");
+  const approved = await findApprovedMember(email);
+  if (!approved || approved.status !== "approved") throw new Error("এই account-এর জন্য Admin approval পাওয়া যায়নি");
+  const metadata = authData.user.user_metadata ?? {};
+  await syncApprovedMemberProfile({
+    email,
+    fullName: String(metadata.full_name ?? approved.full_name),
+    phone: String(metadata.phone ?? approved.phone ?? ""),
+    memberId: String(metadata.member_id ?? approved.member_id),
+    country: String(metadata.country ?? approved.country ?? ""),
+    countryCode: String(metadata.country_code ?? approved.country_code ?? ""),
+    nationalId: String(metadata.national_id ?? approved.national_id ?? ""),
+    passportNumber: String(metadata.passport_number ?? approved.passport_number ?? ""),
+    photoUrl: typeof metadata.photo_url === "string" ? metadata.photo_url : null,
+  }, authData.user.id);
 }
 
 export async function signOutMember() {
