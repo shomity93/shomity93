@@ -242,3 +242,21 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
   .accounting-sidebar-backdrop.is-open { position: fixed; inset: 0; z-index: 30; display: block; background: rgba(9,35,55,.48); }
   .accounting-app-shell { margin-left: 0; }
 }
+
+/* Public navigation drawer and image gallery */
+.project-brand-title { font-size: clamp(18px, 2.2vw, 28px) !important; letter-spacing: -.03em; color: var(--navy); }
+.public-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 60; width: min(300px, 86vw); background: var(--navy); color: #fff; transform: translateX(-105%); transition: transform .22s cubic-bezier(.23,1,.32,1); box-shadow: 14px 0 40px rgba(9,35,55,.22); }
+.public-sidebar.is-open { transform: translateX(0); }
+.public-sidebar-head { min-height: 78px; display:flex; align-items:center; justify-content:space-between; padding: 18px 20px; border-bottom: 1px solid rgba(255,255,255,.14); }
+.public-sidebar-head strong { font-size: 17px; }
+.public-sidebar-head button { color:#fff; }
+.public-sidebar-nav { display:grid; gap:6px; padding:18px 12px; }
+.public-sidebar-nav a { color:#dbe8e6; text-decoration:none; padding:12px 14px; border-radius:10px; font-weight:700; }
+.public-sidebar-nav a:hover { color:#092337; background:#f0c36a; }
+.public-sidebar-backdrop { display:none; }
+.public-gallery-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+.public-gallery-item { border:0; padding:0; overflow:hidden; aspect-ratio: 4/3; border-radius:16px; background:#e6efeb; cursor:pointer; }
+.public-gallery-item img { width:100%; height:100%; object-fit:cover; object-position:center; transition:transform .22s ease; }
+.public-gallery-item:hover img { transform:scale(1.04); }
+@media (max-width: 700px) { .public-gallery-grid { grid-template-columns:repeat(2,1fr); gap:10px; } .public-sidebar-backdrop.is-open { display:block; position:fixed; inset:0; z-index:55; background:rgba(9,35,55,.48); } .desktop-links { display:none !important; } }
+@media (min-width: 701px) { .mobile-menu { display:inline-flex; } }

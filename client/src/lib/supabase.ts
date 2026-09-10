@@ -158,10 +158,10 @@ export async function listApprovedMembers() {
 }
 
 export async function listPublicMembers() {
-  if (!supabase) return [] as Array<{ id: string; member_id: string; full_name: string; photo_url?: string | null }>;
-  const { data, error } = await supabase.from("member_directory").select("id, member_id, full_name, photo_url").order("full_name", { ascending: true }).limit(100);
+  if (!supabase) return [] as Array<{ id: string; member_id: string; full_name: string; email?: string | null; photo_url?: string | null }>;
+  const { data, error } = await supabase.from("member_directory").select("id, member_id, full_name, email, photo_url").order("full_name", { ascending: true }).limit(100);
   if (error) { if (error.code === "42P01" || error.code === "42501") return []; throw error; }
-  return (data ?? []) as Array<{ id: string; member_id: string; full_name: string; photo_url?: string | null }>;
+  return (data ?? []) as Array<{ id: string; member_id: string; full_name: string; email?: string | null; photo_url?: string | null }>;
 }
 
 export async function listMemberSheets() {
