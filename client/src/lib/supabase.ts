@@ -158,10 +158,13 @@ export async function listApprovedMembers() {
 }
 
 export async function listPublicMembers() {
-  if (!supabase) return [] as Array<{ id: string; member_id: string; full_name: string; email?: string | null; photo_url?: string | null }>;
-  const { data, error } = await supabase.from("member_directory").select("id, member_id, full_name, email, photo_url").order("full_name", { ascending: true }).limit(100);
-  if (error) { if (error.code === "42P01" || error.code === "42501") return []; throw error; }
-  return (data ?? []) as Array<{ id: string; member_id: string; full_name: string; email?: string | null; photo_url?: string | null }>;
+  const MemberRow = {} as { id: string; member_id: string; full_name: string; email?: string | null; photo_url?: string | null };
+  if (!supabase) return [] as typeof MemberRow[];
+  const directory = await supabase.from("member_directory").select("id, member_id, full_name, email, photo_url").order("full_name", { ascending: true }).limit(100);
+  if (!directory.error && directory.data?.length) return directory.data as typeof MemberRow[];
+  const fallback = await supabase.from("cooperative_members").select("id, member_id, full_name, email, photo_url").eq("status", "approved").order("full_name", { ascending: true }).limit(100);
+  if (fallback.error) { if (directory.error?.code === "42P01" || directory.error?.code === "42501" || fallback.error.code === "42P01" || fallback.error.code === "42501") return []; throw fallback.error; }
+  return (fallback.data ?? []) as typeof MemberRow[];
 }
 
 export async function listMemberSheets() {
