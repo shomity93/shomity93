@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { uploadCooperativeFile } from "@/lib/cooperativeData";
 
@@ -10,7 +11,7 @@ type Member = { id: string; member_id: string; full_name: string };
 type Props = { type: "deposit" | "expense"; members: Member[]; initial?: Record<string, unknown>; onSubmit: (values: Record<string, unknown>) => Promise<void>; onCancel: () => void };
 
 export default function LedgerForm({ type, members, initial, onSubmit, onCancel }: Props) {
-  const [values, setValues] = useState<Record<string, string>>({ id: String(initial?.id ?? ""), transaction_id: String(initial?.transaction_id ?? ""), voucher_no: String(initial?.voucher_no ?? ""), occurred_on: String(initial?.occurred_on ?? new Date().toISOString().slice(0, 10)), description: String(initial?.description ?? ""), member_id: String(initial?.member_id ?? ""), category: String(initial?.category ?? (type === "deposit" ? "monthly" : "others")), amount: String(initial?.amount ?? initial?.total_amount ?? ""), payment_method: String(initial?.payment_method ?? "cash"), file_url: String(initial?.file_url ?? ""), file_name: String(initial?.file_name ?? (initial?.file_url ? String(initial.file_url).split("/").pop() : "")), file_type: String(initial?.file_type ?? "সংযুক্ত ফাইল"), file_size: String(initial?.file_size ?? "") });
+  const [values, setValues] = useState<Record<string, string>>({ id: String(initial?.id ?? ""), transaction_id: String(initial?.transaction_id ?? ""), voucher_no: String(initial?.voucher_no ?? ""), occurred_on: String(initial?.occurred_on ?? new Date().toISOString().slice(0, 10)), description: String(initial?.description ?? ""), last_note: String(initial?.last_note ?? ""), member_id: String(initial?.member_id ?? ""), category: String(initial?.category ?? (type === "deposit" ? "monthly" : "others")), amount: String(initial?.amount ?? initial?.total_amount ?? ""), payment_method: String(initial?.payment_method ?? "cash"), file_url: String(initial?.file_url ?? ""), file_name: String(initial?.file_name ?? (initial?.file_url ? String(initial.file_url).split("/").pop() : "")), file_type: String(initial?.file_type ?? "সংযুক্ত ফাইল"), file_size: String(initial?.file_size ?? "") });
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -45,7 +46,7 @@ export default function LedgerForm({ type, members, initial, onSubmit, onCancel 
         }
       }
       const file = uploaded?.url ? { url: uploaded.url, name: uploaded.compressed.name || values.file_name || null, type: uploaded.compressed.type || values.file_type || null, size: uploaded.compressed.size ? Math.max(1, Math.round(uploaded.compressed.size / 1024)) : (Number.parseInt(values.file_size, 10) || null) } : { url: null, name: values.file_name || null, type: values.file_type || null, size: Number.parseInt(values.file_size, 10) || null };
-      await onSubmit(type === "deposit" ? { id: values.id || undefined, transaction_id: values.transaction_id.trim(), occurred_on: values.occurred_on, member_id: values.member_id, category: values.category, amount: Number(values.amount), payment_method: values.payment_method, receipt_url: file.url, receipt_name: file.name, receipt_type: file.type, receipt_size: file.size } : { id: values.id || undefined, voucher_no: values.voucher_no.trim(), occurred_on: values.occurred_on, description: values.description.trim(), category: values.category, total_amount: Number(values.amount), voucher_url: file.url, voucher_name: file.name, voucher_type: file.type, voucher_size: file.size });
+      await onSubmit(type === "deposit" ? { id: values.id || undefined, transaction_id: values.transaction_id.trim(), occurred_on: values.occurred_on, member_id: values.member_id, category: values.category, amount: Number(values.amount), payment_method: values.payment_method, last_note: values.last_note.trim() || null, receipt_url: file.url, receipt_name: file.name, receipt_type: file.type, receipt_size: file.size } : { id: values.id || undefined, voucher_no: values.voucher_no.trim(), occurred_on: values.occurred_on, description: values.description.trim(), last_note: values.last_note.trim() || null, category: values.category, total_amount: Number(values.amount), voucher_url: file.url, voucher_name: file.name, voucher_type: file.type, voucher_size: file.size });
       if (uploadWarning) setError(`এন্ট্রি সংরক্ষিত হয়েছে, কিন্তু ফাইল আপলোড হয়নি: ${uploadWarning}. পরে Google Drive link পেস্ট করে সম্পাদনা করুন।`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "সংরক্ষণ করা যায়নি");

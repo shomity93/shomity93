@@ -19,6 +19,7 @@ export default function MemberTransactionForm({ members, initial, onSubmit, onCa
     transaction_date: initial?.transaction_date ?? new Date().toISOString().slice(0, 10),
     transaction_type: initial?.transaction_type ?? "deposit",
     description: initial?.description ?? "",
+    last_note: initial?.last_note ?? "",
     amount: initial ? String(initial.amount) : "",
     payment_method: initial?.payment_method ?? "cash",
     attachment_url: initial?.attachment_url ?? "",
@@ -60,6 +61,7 @@ export default function MemberTransactionForm({ members, initial, onSubmit, onCa
         transaction_date: values.transaction_date,
         transaction_type: values.transaction_type,
         description: values.description.trim(),
+        last_note: values.last_note.trim() || null,
         amount: Number(values.amount),
         payment_method: values.payment_method,
         ...attachment,
@@ -79,6 +81,7 @@ export default function MemberTransactionForm({ members, initial, onSubmit, onCa
           <div><Label>সদস্য</Label><select className="h-10 w-full rounded-md border bg-white px-3 text-sm" value={values.member_id} onChange={(event) => set("member_id", event.target.value)} required><option value="">সদস্য নির্বাচন করুন</option>{members.map((member) => <option key={member.id} value={member.id}>{member.full_name} · {member.member_id}</option>)}</select></div>
           <div className="grid grid-cols-2 gap-3"><div><Label>হিসাবের ধরন</Label><select className="h-10 w-full rounded-md border bg-white px-3 text-sm" value={values.transaction_type} onChange={(event) => set("transaction_type", event.target.value)}>{Object.entries(labels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div><div><Label>তারিখ</Label><Input type="date" value={values.transaction_date} onChange={(event) => set("transaction_date", event.target.value)} required /></div></div>
           <div><Label>বিবরণ</Label><Textarea value={values.description} onChange={(event) => set("description", event.target.value)} placeholder="যেমন: মার্চ মাসের জমা" required /></div>
+          <div><Label>শেষ নোট</Label><Textarea value={values.last_note} onChange={(event) => set("last_note", event.target.value)} placeholder="এই এন্ট্রি সম্পর্কে শেষ নোট লিখুন" /></div>
           <div className="grid grid-cols-2 gap-3"><div><Label>পরিমাণ</Label><Input type="number" min="0.01" step="0.01" value={values.amount} onChange={(event) => set("amount", event.target.value)} required /></div><div><Label>পেমেন্ট মাধ্যম</Label><select className="h-10 w-full rounded-md border bg-white px-3 text-sm" value={values.payment_method} onChange={(event) => set("payment_method", event.target.value)}><option value="cash">নগদ</option><option value="bkash">বিকাশ</option><option value="bank">ব্যাংক</option><option value="other">অন্যান্য</option></select></div></div>
           <div><Label>রসিদ/প্রমাণপত্র</Label><Input type="file" accept="image/*,application/pdf" disabled={busy} onChange={(event) => { setPendingFile(event.target.files?.[0] ?? null); setError(""); }} />{pendingFile && <p className="mt-1 text-xs text-amber-700">ফাইল সংরক্ষণের সময় আপলোড হবে: {pendingFile.name}</p>}{values.attachment_url && !pendingFile && <p className="mt-1 text-xs text-emerald-700">বর্তমান ফাইল: {values.attachment_name} · {values.attachment_size} KB</p>}</div>
           {error && <p className="rounded-md bg-rose-50 p-3 text-sm text-rose-700" role="alert">{error}</p>}
