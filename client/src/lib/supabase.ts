@@ -305,15 +305,15 @@ export async function createGalleryItem(input: { imageUrl: string; storagePath: 
 
 export async function getSiteSettings() {
   if (!supabase) return null;
-  const { data, error } = await supabase.from("site_settings").select("id, name, tagline_one, tagline_two, contact_email, notice_text, logo_url, logo_path, about_title, pillar_one_title, pillar_one_text, pillar_two_title, pillar_two_text, pillar_three_title, pillar_three_text").order("updated_at", { ascending: false }).limit(1).maybeSingle();
+  const { data, error } = await supabase.from("site_settings").select("id, name, tagline_one, tagline_two, contact_email, notice_text, hero_text, logo_url, logo_path, about_title, pillar_one_title, pillar_one_text, pillar_two_title, pillar_two_text, pillar_three_title, pillar_three_text").order("updated_at", { ascending: false }).limit(1).maybeSingle();
   if (error) throw error;
   return data;
 }
 
-export async function saveSiteSettings(input: { name: string; taglineOne: string; taglineTwo: string; contactEmail: string; noticeText: string; aboutTitle?: string; pillarOneTitle?: string; pillarOneText?: string; pillarTwoTitle?: string; pillarTwoText?: string; pillarThreeTitle?: string; pillarThreeText?: string; logoUrl?: string; logoPath?: string }) {
+export async function saveSiteSettings(input: { name: string; taglineOne: string; taglineTwo: string; contactEmail: string; noticeText: string; heroText?: string; aboutTitle?: string; pillarOneTitle?: string; pillarOneText?: string; pillarTwoTitle?: string; pillarTwoText?: string; pillarThreeTitle?: string; pillarThreeText?: string; logoUrl?: string; logoPath?: string }) {
   if (!supabase) return null;
   const { data: current } = await supabase.from("site_settings").select("id").order("updated_at", { ascending: false }).limit(1).maybeSingle();
-  const payload = { name: input.name.trim(), tagline_one: input.taglineOne.trim(), tagline_two: input.taglineTwo.trim(), contact_email: input.contactEmail.trim(), notice_text: input.noticeText.trim(), about_title: input.aboutTitle?.trim() || null, pillar_one_title: input.pillarOneTitle?.trim() || null, pillar_one_text: input.pillarOneText?.trim() || null, pillar_two_title: input.pillarTwoTitle?.trim() || null, pillar_two_text: input.pillarTwoText?.trim() || null, pillar_three_title: input.pillarThreeTitle?.trim() || null, pillar_three_text: input.pillarThreeText?.trim() || null, logo_url: input.logoUrl ?? null, logo_path: input.logoPath ?? null, updated_at: new Date().toISOString() };
+  const payload = { name: input.name.trim(), tagline_one: input.taglineOne.trim(), tagline_two: input.taglineTwo.trim(), contact_email: input.contactEmail.trim(), notice_text: input.noticeText.trim(), hero_text: input.heroText?.trim() || null, about_title: input.aboutTitle?.trim() || null, pillar_one_title: input.pillarOneTitle?.trim() || null, pillar_one_text: input.pillarOneText?.trim() || null, pillar_two_title: input.pillarTwoTitle?.trim() || null, pillar_two_text: input.pillarTwoText?.trim() || null, pillar_three_title: input.pillarThreeTitle?.trim() || null, pillar_three_text: input.pillarThreeText?.trim() || null, logo_url: input.logoUrl ?? null, logo_path: input.logoPath ?? null, updated_at: new Date().toISOString() };
   const query = current?.id ? supabase.from("site_settings").update(payload).eq("id", current.id) : supabase.from("site_settings").insert(payload);
   const { data, error } = await query.select().single();
   if (error) throw error;
