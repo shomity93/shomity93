@@ -122,11 +122,17 @@ export async function getCurrentMember() {
   if (!supabase) return null;
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) return null;
-  const { data, error } = await supabase.from("cooperative_members").select("id, auth_user_id, member_id, full_name, email, phone, address, country, country_code, national_id, passport_number, photo_url, role, status").eq("auth_user_id", authData.user.id).maybeSingle();
+  const { data, error } = await supabase.from("cooperative_members").select("id, auth_user_id, member_id, full_name, email, phone, address, country, country_code, national_id, passport_number, photo_url, social_links, role, status").eq("auth_user_id", authData.user.id).maybeSingle();
   if (error) throw error;
   return data;
 }
 
+export async function updateMyMemberSocialLinks(socialLinks: Record<string, string>) {
+  if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
+  const userId = await getCurrentAuthUserId(); if (!userId) throw new Error("সেশন পাওয়া যায়নি");
+  const { error } = await supabase.from("cooperative_members").update({ social_links: socialLinks, updated_at: new Date().toISOString() }).eq("auth_user_id", userId);
+  if (error) throw error;
+}
 export async function updateMyMemberProfile(input: { fullName: string; phone: string; address: string; photoFile?: File | null; currentPhotoUrl?: string | null }) {
   if (!supabase) throw new Error("সুপাবেস সংযোগ কনফিগার করা হয়নি");
   let photoUrl = input.currentPhotoUrl ?? null;
@@ -152,7 +158,7 @@ export async function listExpenses() {
 
 export async function listApprovedMembers() {
   if (!supabase) return [];
-  const { data, error } = await supabase.from("cooperative_members").select("id, member_id, full_name, email, phone, country, country_code, national_id, passport_number, photo_url, role, status").eq("status", "approved").order("created_at", { ascending: true });
+  const { data, error } = await supabase.from("cooperative_members").select("id, member_id, full_name, email, phone, country, country_code, national_id, passport_number, photo_url, social_links, role, status").eq("status", "approved").order("created_at", { ascending: true });
   if (error) throw error;
   return data ?? [];
 }
@@ -160,7 +166,7 @@ export async function listApprovedMembers() {
 export async function listPublicMembers() {
   const MemberRow = {} as { id: string; member_id: string; full_name: string; email?: string | null; photo_url?: string | null };
   if (!supabase) return [] as typeof MemberRow[];
-  const directory = await supabase.from("member_directory").select("id, member_id, full_name, email, photo_url").order("full_name", { ascending: true }).limit(100);
+  const directory = await supabase.from("member_directory").select("id, member_id, full_name, email, phone, address, country, country_code, photo_url, social_links").order("full_name", { ascending: true }).limit(100);
   if (!directory.error && directory.data?.length) return directory.data as typeof MemberRow[];
   const fallback = await supabase.from("cooperative_members").select("id, member_id, full_name, email, photo_url").eq("status", "approved").order("full_name", { ascending: true }).limit(100);
   if (fallback.error) { if (directory.error?.code === "42P01" || directory.error?.code === "42501" || fallback.error.code === "42P01" || fallback.error.code === "42501") return []; throw fallback.error; }
@@ -310,10 +316,10 @@ export async function getSiteSettings() {
   return data;
 }
 
-export async function saveSiteSettings(input: { name: string; taglineOne: string; taglineTwo: string; contactEmail: string; noticeText: string; heroText?: string; aboutTitle?: string; pillarOneTitle?: string; pillarOneText?: string; pillarTwoTitle?: string; pillarTwoText?: string; pillarThreeTitle?: string; pillarThreeText?: string; logoUrl?: string; logoPath?: string }) {
+export async function saveSiteSettings(input: { name: string; taglineOne: string; taglineTwo: string; contactEmail: string; noticeText: string; heroText?: string; heroTextColor?: string; aboutTitle?: string; pillarOneTitle?: string; pillarOneText?: string; pillarTwoTitle?: string; pillarTwoText?: string; pillarThreeTitle?: string; pillarThreeText?: string; logoUrl?: string; logoPath?: string }) {
   if (!supabase) return null;
   const { data: current } = await supabase.from("site_settings").select("id").order("updated_at", { ascending: false }).limit(1).maybeSingle();
-  const payload = { name: input.name.trim(), tagline_one: input.taglineOne.trim(), tagline_two: input.taglineTwo.trim(), contact_email: input.contactEmail.trim(), notice_text: input.noticeText.trim(), hero_text: input.heroText?.trim() || null, about_title: input.aboutTitle?.trim() || null, pillar_one_title: input.pillarOneTitle?.trim() || null, pillar_one_text: input.pillarOneText?.trim() || null, pillar_two_title: input.pillarTwoTitle?.trim() || null, pillar_two_text: input.pillarTwoText?.trim() || null, pillar_three_title: input.pillarThreeTitle?.trim() || null, pillar_three_text: input.pillarThreeText?.trim() || null, logo_url: input.logoUrl ?? null, logo_path: input.logoPath ?? null, updated_at: new Date().toISOString() };
+  const payload = { name: input.name.trim(), tagline_one: input.taglineOne.trim(), tagline_two: input.taglineTwo.trim(), contact_email: input.contactEmail.trim(), notice_text: input.noticeText.trim(), hero_text: input.heroText?.trim() || null, hero_text_color: input.heroTextColor || "#ffffff", about_title: input.aboutTitle?.trim() || null, pillar_one_title: input.pillarOneTitle?.trim() || null, pillar_one_text: input.pillarOneText?.trim() || null, pillar_two_title: input.pillarTwoTitle?.trim() || null, pillar_two_text: input.pillarTwoText?.trim() || null, pillar_three_title: input.pillarThreeTitle?.trim() || null, pillar_three_text: input.pillarThreeText?.trim() || null, logo_url: input.logoUrl ?? null, logo_path: input.logoPath ?? null, updated_at: new Date().toISOString() };
   const query = current?.id ? supabase.from("site_settings").update(payload).eq("id", current.id) : supabase.from("site_settings").insert(payload);
   const { data, error } = await query.select().single();
   if (error) throw error;
