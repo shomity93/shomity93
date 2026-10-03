@@ -159,7 +159,7 @@ export async function listExpenses() {
 
 export async function listApprovedMembers() {
   if (!supabase) return [];
-  const { data, error } = await supabase.from("cooperative_members").select("id, member_id, full_name, email, phone, country, country_code, national_id, passport_number, photo_url, social_links, role, status").eq("status", "approved").order("created_at", { ascending: true });
+  const { data, error } = await supabase.from("cooperative_members").select("id, member_id, full_name, email, phone, country, country_code, national_id, passport_number, photo_url, social_links, show_on_homepage, role, status").eq("status", "approved").eq("show_on_homepage", true).order("created_at", { ascending: true });
   if (error) throw error;
   return data ?? [];
 }
