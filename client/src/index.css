@@ -299,4 +299,13 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
 .print-page{box-sizing:border-box;min-height:1120px;padding:178px 58px 112px;background:#fff center top / 100% 100% no-repeat;position:relative;overflow:hidden;break-after:page;page-break-after:always}
 .print-page>.print-report-header{display:none!important}.print-page .print-report-title{margin:0 0 12px!important}.print-page .print-report-footer{position:absolute!important;left:58px!important;right:58px!important;bottom:92px!important}
 .table-pagination{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:12px;color:#52636a;font-size:12px}
-@media print{.print-page{min-height:267mm!important;height:267mm!important;padding:42mm 15mm 28mm!important;background-image:none!important;background-size:100% 100%!important;break-after:page!important;page-break-after:always!important}.print-page:last-child{break-after:auto!important;page-break-after:auto!important}.print-page .print-report-footer{bottom:24mm!important;left:15mm!important;right:15mm!important}}
+@media print{.print-page{min-height:267mm!important;height:267mm!important;padding:42mm 15mm 28mm!important;background-color:#fff!important;background-size:100% 100%!important;break-after:page!important;page-break-after:always!important}.print-page:last-child{break-after:auto!important;page-break-after:auto!important}.print-page .print-report-footer{bottom:24mm!important;left:15mm!important;right:15mm!important}}
+
+/* Final A4 letterhead geometry: keep the full artwork behind every output page and push data below its header. */
+.print-page{box-sizing:border-box!important;width:794px!important;height:1123px!important;min-height:0!important;padding:270px 62px 130px!important;background-repeat:no-repeat!important;background-position:0 0!important;background-size:100% 100%!important;overflow:hidden!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+.print-page>.print-report-title{position:relative!important;z-index:2!important;margin:0 0 14px!important;text-align:center!important}
+.print-page .table-shell{position:relative!important;z-index:2!important}
+@media print{
+  .print-page{width:210mm!important;height:297mm!important;min-height:297mm!important;padding:60mm 15mm 30mm!important;background-repeat:no-repeat!important;background-position:0 0!important;background-size:100% 100%!important;overflow:hidden!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  .print-page>.print-report-title{margin:0 0 5mm!important}
+}
