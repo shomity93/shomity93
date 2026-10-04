@@ -294,3 +294,9 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
 .print-summary-chip{background:#fff!important;color:#092337!important;box-shadow:none!important}
 .print-report-footer{background:transparent!important;background-color:transparent!important;color:#52636a!important;border-top:1px solid #cbd5e1!important;border-bottom:0!important;box-shadow:none!important;min-height:0!important}
 .print-watermarked:before{content:"আহমদিয়ান পরিবার-93"!important;opacity:1!important;color:rgba(9,35,55,.065)!important;font-family:inherit!important;letter-spacing:.06em!important}
+
+/* User-supplied Ahmadian Paribar letterhead: used by browser print and html2canvas PDF pages. */
+.print-page{box-sizing:border-box;min-height:1120px;padding:178px 58px 112px;background:#fff url("/manus-storage/ahmadiyan-letterhead_00b472b1.png") center top / 100% 100% no-repeat;position:relative;overflow:hidden;break-after:page;page-break-after:always}
+.print-page>.print-report-header{display:none!important}.print-page .print-report-title{margin:0 0 12px!important}.print-page .print-report-footer{position:absolute!important;left:58px!important;right:58px!important;bottom:92px!important}
+.table-pagination{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:12px;color:#52636a;font-size:12px}
+@media print{.print-page{min-height:267mm!important;height:267mm!important;padding:42mm 15mm 28mm!important;background-image:url("/manus-storage/ahmadiyan-letterhead_00b472b1.png")!important;background-size:100% 100%!important;break-after:page!important;page-break-after:always!important}.print-page:last-child{break-after:auto!important;page-break-after:auto!important}.print-page .print-report-footer{bottom:24mm!important;left:15mm!important;right:15mm!important}}
