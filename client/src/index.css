@@ -335,3 +335,12 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
   .print-report-header,.print-summary-chip{background:transparent!important}
   .print-output-root .ledger-table th,.print-output-root .ledger-table td{background:rgba(255,255,255,.58)!important}
 }
+
+/* Watermark must remain visible above translucent report data, without rotation. */
+.print-watermarked:before{
+  z-index:4!important;
+  color:rgba(9,35,55,.16)!important;
+  font-size:64px!important;
+  font-weight:800!important;
+}
+.print-watermarked>*{z-index:1!important}
