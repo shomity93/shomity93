@@ -141,7 +141,7 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
 /* Final isolated report print surface. The selected root is mounted only during the print callback. */
 .print-output-root { display: none; }
 @media print {
-  @page { size: A4 portrait; margin: 12mm; }
+  @page { size: A4 portrait; margin: 0 !important; }
   html, body { width: 100%; min-height: 0; background: #fff !important; }
   body * { visibility: hidden !important; }
   #root, #root .site-shell, #root .accounting-app-shell { min-height: 0 !important; height: auto !important; }
@@ -155,7 +155,7 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
     min-height: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: #fff !important;
+    background: transparent !important;
     color: #000 !important;
   }
   .print-output-root .print-only-ledger,
@@ -199,7 +199,7 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
     word-break: break-word !important;
     border: 1px solid #b6bec0 !important;
     color: #000 !important;
-    background: #fff !important;
+    background: rgba(255,255,255,.66) !important;
   }
   .print-output-root .ledger-table th {
     background: #eef2f1 !important;
@@ -280,7 +280,7 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
 
 .report-date-input{display:block!important;visibility:visible!important;opacity:1!important;color-scheme:light!important;min-height:40px!important}.member-report-meta{display:grid!important;grid-template-columns:1fr 1fr!important;text-align:left!important}.member-report-meta strong{grid-column:1}.member-report-meta span:nth-child(2){grid-column:2;text-align:right}.member-report-meta span:nth-child(3){grid-column:1}.member-report-meta span:nth-child(4){grid-column:2;text-align:right}@media(max-width:650px){.member-report-meta{grid-template-columns:1fr!important}.member-report-meta>*{grid-column:1!important;text-align:left!important}}
 
-.report-date-input{display:block!important;visibility:visible!important;opacity:1!important;color-scheme:light!important;min-height:40px!important}.print-report-header{position:relative;display:grid;grid-template-columns:44px 1fr;align-items:center;gap:8px}.print-logo-slot{width:40px;height:40px;display:flex;align-items:center;justify-content:flex-start}.print-logo-slot img{width:36px;height:36px;object-fit:contain}.print-report-title{text-align:center!important;clear:both}.print-summary-chip{display:inline-block;margin:0 0 10px;padding:5px 10px;border:1px solid #64748b;border-radius:4px;font-weight:700}.print-watermarked{position:relative}.print-watermarked:before{content:"আহমদিয়ান পরিবার-93";position:absolute;inset:35% 0 auto;text-align:center;font-size:54px;font-weight:800;color:rgba(9,35,55,.055);transform:rotate(-28deg);pointer-events:none;z-index:0}.print-watermarked>*{position:relative;z-index:1}.print-report-footer{margin-top:24px;padding-top:8px;border-top:1px solid #cbd5e1;text-align:center;font-size:10px;color:#475569}@media print{.print-report-header{margin-bottom:5mm!important}.print-report-header strong{font-size:16pt}.print-report-header span{font-size:9pt}.print-logo-slot{position:absolute;left:0;top:0}.print-report-header>div:last-child{text-align:center;grid-column:1 / -1}.print-summary-chip{font-size:10pt}.print-watermarked:before{position:fixed}.print-report-footer{position:fixed;bottom:8mm;left:0;right:0}.print-output-root .member-print-sheet h4{display:none!important}.print-output-root .ledger-table th,.print-output-root .ledger-table td{font-size:9pt!important;padding:5px 4px!important}.print-output-root .ledger-table tr{break-inside:avoid;page-break-inside:avoid}}
+.report-date-input{display:block!important;visibility:visible!important;opacity:1!important;color-scheme:light!important;min-height:40px!important}.print-report-header{position:relative;display:grid;grid-template-columns:44px 1fr;align-items:center;gap:8px}.print-logo-slot{width:40px;height:40px;display:flex;align-items:center;justify-content:flex-start}.print-logo-slot img{width:36px;height:36px;object-fit:contain}.print-report-title{text-align:center!important;clear:both}.print-summary-chip{display:inline-block;margin:0 0 10px;padding:5px 10px;border:1px solid #64748b;border-radius:4px;font-weight:700}.print-watermarked{position:relative}.print-watermarked:before{content:"আহমদিয়ান পরিবার-93";position:absolute;inset:35% 0 auto;text-align:center;font-size:54px;font-weight:800;color:rgba(9,35,55,.055);transform:none;pointer-events:none;z-index:0}.print-watermarked>*{position:relative;z-index:1}.print-report-footer{margin-top:24px;padding-top:8px;border-top:1px solid #cbd5e1;text-align:center;font-size:10px;color:#475569}@media print{.print-report-header{margin-bottom:5mm!important}.print-report-header strong{font-size:16pt}.print-report-header span{font-size:9pt}.print-logo-slot{position:absolute;left:0;top:0}.print-report-header>div:last-child{text-align:center;grid-column:1 / -1}.print-summary-chip{font-size:10pt}.print-watermarked:before{position:fixed}.print-report-footer{position:fixed;bottom:8mm;left:0;right:0}.print-output-root .member-print-sheet h4{display:none!important}.print-output-root .ledger-table th,.print-output-root .ledger-table td{font-size:9pt!important;padding:5px 4px!important}.print-output-root .ledger-table tr{break-inside:avoid;page-break-inside:avoid}}
 /* Canvas-safe letterhead: html2canvas does not apply @media print rules. */
 .print-report-header{position:relative!important;display:grid!important;grid-template-columns:44px minmax(0,1fr)!important;align-items:center!important;gap:10px!important;width:100%!important;min-height:48px!important;padding:6px 0 9px!important;margin:0 0 12px!important;border-bottom:2px solid #c9a85a!important;text-align:center!important;background:linear-gradient(180deg,#fff 0%,#fbfcfa 100%)!important}
 .print-report-header:after{content:"";position:absolute;left:0;right:0;bottom:-5px;height:1px;background:#092337!important;opacity:.35}
@@ -291,7 +291,7 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
 .print-logo-slot{grid-column:1!important;grid-row:1!important;position:static!important;width:40px!important;height:40px!important;display:flex!important;align-items:center!important;justify-content:center!important}
 .print-logo-slot img{display:block!important;width:36px!important;height:36px!important;object-fit:contain!important}
 .print-report-title{display:block!important;margin:12px 0 10px!important;padding:0!important;text-align:center!important;font-size:17px!important;line-height:1.35!important;color:#092337!important;font-weight:800!important}
-.print-summary-chip{background:#fff!important;color:#092337!important;box-shadow:none!important}
+.print-summary-chip{background:rgba(255,255,255,.72)!important;color:#092337!important;box-shadow:none!important}
 .print-report-footer{background:transparent!important;background-color:transparent!important;color:#52636a!important;border-top:1px solid #cbd5e1!important;border-bottom:0!important;box-shadow:none!important;min-height:0!important}
 .print-watermarked:before{content:"আহমদিয়ান পরিবার-93"!important;opacity:1!important;color:rgba(9,35,55,.065)!important;font-family:inherit!important;letter-spacing:.06em!important}
 
@@ -316,4 +316,22 @@ footer{background:var(--navy);color:#fff}.footer-inner{min-height:100px;display:
   html,body{width:210mm!important;min-width:210mm!important;margin:0!important;padding:0!important;background:transparent!important}
   .print-output-root{width:210mm!important;margin:0!important;padding:0!important;background:transparent!important}
   .print-page{width:210mm!important;height:297mm!important;min-height:297mm!important;margin:0!important;padding:60mm 15mm 30mm!important;background-color:transparent!important;background-size:100% 100%!important}
+}
+
+/* Final report overrides: straight watermark, transparent report layers, and full-bleed A4 Print. */
+.print-watermarked:before{
+  transform:none!important;
+  white-space:nowrap!important;
+  text-align:center!important;
+  opacity:.42!important;
+}
+.print-report-header{background:transparent!important}
+.print-summary-chip{background:rgba(255,255,255,.58)!important}
+@media print{
+  @page{size:A4 portrait!important;margin:0!important}
+  html,body,#root,#root .site-shell,#root .accounting-app-shell,.print-output-root{width:210mm!important;min-width:210mm!important;margin:0!important;padding:0!important;background:transparent!important}
+  .print-page{width:210mm!important;height:297mm!important;min-height:297mm!important;margin:0!important;padding:60mm 15mm 30mm!important;background-color:transparent!important;background-repeat:no-repeat!important;background-position:0 0!important;background-size:100% 100%!important}
+  .print-watermarked:before{position:fixed!important;top:45%!important;left:0!important;right:0!important;bottom:auto!important;transform:none!important}
+  .print-report-header,.print-summary-chip{background:transparent!important}
+  .print-output-root .ledger-table th,.print-output-root .ledger-table td{background:rgba(255,255,255,.58)!important}
 }
